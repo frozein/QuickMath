@@ -6,9 +6,6 @@
  * 
  * ------------------------------------------------------------------------
  * 
- * this library uses SSE3 SIMD intrinsics (xmmintrin.h and pmmintrin.h),
- * to disable them, "#define QM_NO_SIMD" in one source file before this file is "#include"d
- * 
  * to disable the need to link with the C runtime library, you must:
  * "#define QM_SQRTF yourSqrtf"
  * "#define QM_SINF yourSinf"
@@ -47,6 +44,8 @@ extern "C"
 {
 #endif
 
+#include <xmmintrin.h>
+#include <pmmintrin.h>
 #define QM_INLINE static inline
 
 //if you wish to set your own function prefix or remove it entirely,
@@ -73,13 +72,6 @@ extern "C"
 
 #ifndef QM_COSF
 	#define QM_COSF cosf
-#endif
-
-//if you wish not to use SIMD instructions (SSE3 instruction set),
-//#define QM_NO_SIMD in one source file before including this file
-#ifndef QM_NO_SIMD
-	#include <xmmintrin.h>
-	#include <pmmintrin.h>
 #endif
 
 //----------------------------------------------------------------------//
@@ -110,19 +102,11 @@ typedef union
 	float v[4];
 	struct{ float x, y, z, w; };
 	struct{ float r, g, b, a; };
-
-	#ifndef QM_NO_SIMD
 	__m128 packed;
-	#endif
 } QMvec4;
 
 //-----------------------------//
 //matrices are column-major
-
-typedef struct
-{
-	float m[2][2];
-} QMmat2;
 
 typedef struct
 {
@@ -132,10 +116,7 @@ typedef struct
 typedef struct
 {
 	float m[4][4];
-
-	#ifndef QM_NO_SIMD
 	__m128 packed[4]; //array of columns
-	#endif
 } QMmat4;
 
 //-----------------------------//
@@ -144,10 +125,7 @@ typedef union
 {
 	float q[4];
 	struct{ float x, y, z, w; };
-
-	#ifndef QM_NO_SIMD
 	__m128 packed;
-	#endif
 } QMquaternion;
 
 //----------------------------------------------------------------------//
@@ -186,14 +164,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_add)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = v1.x + v2.x;
-	result.y = v1.y + v2.y;
-	result.z = v1.z + v2.z;
-	result.w = v1.w + v2.w;
-	#else
 	result.packed = _mm_add_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
@@ -225,14 +196,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_sub)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = v1.x - v2.x;
-	result.y = v1.y - v2.y;
-	result.z = v1.z - v2.z;
-	result.w = v1.w - v2.w;
-	#else
 	result.packed = _mm_sub_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
@@ -264,14 +228,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_mult)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = v1.x * v2.x;
-	result.y = v1.y * v2.y;
-	result.z = v1.z * v2.z;
-	result.w = v1.w * v2.w;
-	#else
 	result.packed = _mm_mul_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
@@ -303,14 +260,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_div)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = v1.x / v2.x;
-	result.y = v1.y / v2.y;
-	result.z = v1.z / v2.z;
-	result.w = v1.w / v2.w;
-	#else
 	result.packed = _mm_div_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
@@ -342,15 +292,8 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_scale)(QMvec4 v, float s)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = v.x * s;
-	result.y = v.y * s;
-	result.z = v.z * s;
-	result.w = v.w * s;
-	#else
 	__m128 scale = _mm_set1_ps(s);
 	result.packed = _mm_mul_ps(v.packed, scale);
-	#endif
 
 	return result;
 }
@@ -379,14 +322,10 @@ QM_INLINE float QM_PREFIX(vec4_dot)(QMvec4 v1, QMvec4 v2)
 {
 	float result;
 
-	#ifdef QM_NO_SIMD
-	result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
-	#else
 	__m128 r = _mm_mul_ps(v1.packed, v2.packed);
 	r = _mm_hadd_ps(r, r);
 	r = _mm_hadd_ps(r, r);
 	_mm_store_ss(&result, r);
-	#endif
 
 	return result;
 }
@@ -437,7 +376,7 @@ QM_INLINE float QM_PREFIX(vec4_length)(QMvec4 v)
 
 QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
 {
-	QMvec2 result = {0};
+	QMvec2 result = {};
 
 	float invLen = QM_PREFIX(vec2_length)(v);
 	if(invLen != 0.0f)
@@ -452,7 +391,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
 
 QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
 {
-	QMvec3 result = {0};
+	QMvec3 result = {};
 
 	float invLen = QM_PREFIX(vec3_length)(v);
 	if(invLen != 0.0f)
@@ -468,22 +407,15 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
 
 QM_INLINE QMvec4 QM_PREFIX(vec4_normalize)(QMvec4 v)
 {
-	QMvec4 result = {0};
+	QMvec4 result = {};
 
 	float invLen = QM_PREFIX(vec4_length)(v);
 	if(invLen != 0.0f)
 	{
 		invLen = 1.0f / invLen;
 
-		#ifdef QM_NO_SIMD
-		result.x = v.x * invLen;
-		result.y = v.y * invLen;
-		result.z = v.z * invLen;
-		result.w = v.w * invLen;
-		#else
 		__m128 scale = _mm_set1_ps(invLen);
 		result.packed = _mm_mul_ps(v.packed, scale);
-		#endif
 	}
 
 	return result;
@@ -578,14 +510,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_min)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = QM_MIN(v1.x, v2.x);
-	result.y = QM_MIN(v1.y, v2.y);
-	result.z = QM_MIN(v1.z, v2.z);
-	result.w = QM_MIN(v1.w, v2.w);
-	#else
 	result.packed = _mm_min_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
@@ -617,14 +542,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
-	#ifdef QM_NO_SIMD
-	result.x = QM_MAX(v1.x, v2.x);
-	result.y = QM_MAX(v1.y, v2.y);
-	result.z = QM_MAX(v1.z, v2.z);
-	result.w = QM_MAX(v1.w, v2.w);
-	#else
 	result.packed = _mm_max_ps(v1.packed, v2.packed);
-	#endif
 
 	return result;
 }
