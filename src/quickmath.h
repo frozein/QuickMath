@@ -10,7 +10,8 @@
  * "#define QM_SQRTF yourSqrtf"
  * "#define QM_SINF yourSinf"
  * "#define QM_COSF yourCosf"
- * in one source file before this file is "#include"d
+ * and replace the "#include <math.h>" with your own header where the
+ * above functions are declared
  * 
  * to change the function prefixes (default is "QM_"), you must either:
  * "#define QM_PREFIX"                        //for no prefix
@@ -56,23 +57,13 @@ extern "C"
 #endif
 
 //if you wish to not use any of the CRT functions, you must #define your
-//own versions of the below functions in one source file before 
-//including this file
-#if !defined(QM_SQRTF) || !defined(QM_SINF) || !defined(QM_COSF)
-	#include <math.h>
-#endif
+//own versions of the below functions and #include the appropriate header
+#include <math.h>
 
-#ifndef QM_SQRTF
-	#define QM_SQRTF sqrtf
-#endif
-
-#ifndef QM_SINF
-	#define QM_SINF sinf
-#endif
-
-#ifndef QM_COSF
-	#define QM_COSF cosf
-#endif
+#define QM_SQRTF sqrtf
+#define QM_SINF sinf
+#define QM_COSF cosf
+#define QM_TANF tanf
 
 //----------------------------------------------------------------------//
 //STRUCT DEFINITIONS:
@@ -108,12 +99,12 @@ typedef union
 //-----------------------------//
 //matrices are column-major
 
-typedef struct
+typedef union
 {
 	float m[3][3];
 } QMmat3;
 
-typedef struct
+typedef union
 {
 	float m[4][4];
 	__m128 packed[4]; //array of columns
@@ -133,6 +124,28 @@ typedef union
 
 #define QM_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define QM_MAX(x, y) ((x) > (y) ? (x) : (y))
+
+QM_INLINE float QM_PREFIX(rad_to_deg)(float rad)
+{
+	return rad * 57.2957795131f;
+}
+
+QM_INLINE float QM_PREFIX(deg_to_rad)(float deg)
+{
+	return deg * 0.01745329251f;
+}
+
+QM_INLINE __m128 QM_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2)
+{
+	__m128 result;
+
+	result =                    _mm_mul_ps(_mm_shuffle_ps(c1, c1, _MM_SHUFFLE(0, 0, 0, 0)), m2.packed[0]);
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(c1, c1, _MM_SHUFFLE(1, 1, 1, 1)), m2.packed[1]));
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(c1, c1, _MM_SHUFFLE(2, 2, 2, 2)), m2.packed[2]));
+	result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(c1, c1, _MM_SHUFFLE(3, 3, 3, 3)), m2.packed[3]));
+
+	return result;
+}
 
 //----------------------------------------------------------------------//
 //VECTOR FUNCTIONS:
@@ -543,6 +556,458 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 	QMvec4 result;
 
 	result.packed = _mm_max_ps(v1.packed, v2.packed);
+
+	return result;
+}
+
+//----------------------------------------------------------------------//
+//MATRIX FUNCTIONS:
+
+//initialization:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_identity)()
+{
+	QMmat3 result = {
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f
+	};
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_identity)()
+{
+	QMmat4 result = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+
+	return result;
+}
+
+//addition:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_add)(QMmat3 m1, QMmat3 m2)
+{
+	QMmat3 result;
+
+	result.m[0][0] = m1.m[0][0] + m2.m[0][0];
+	result.m[0][1] = m1.m[0][1] + m2.m[0][1];
+	result.m[0][2] = m1.m[0][2] + m2.m[0][2];
+	result.m[1][0] = m1.m[1][0] + m2.m[1][0];
+	result.m[1][1] = m1.m[1][1] + m2.m[1][1];
+	result.m[1][2] = m1.m[1][2] + m2.m[1][2];
+	result.m[2][0] = m1.m[2][0] + m2.m[2][0];
+	result.m[2][1] = m1.m[2][1] + m2.m[2][1];
+	result.m[2][2] = m1.m[2][2] + m2.m[2][2];
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_add)(QMmat4 m1, QMmat4 m2)
+{
+	QMmat4 result;
+
+	result.packed[0] = _mm_add_ps(m1.packed[0], m2.packed[0]);
+	result.packed[1] = _mm_add_ps(m1.packed[1], m2.packed[1]);
+	result.packed[2] = _mm_add_ps(m1.packed[2], m2.packed[2]);
+	result.packed[3] = _mm_add_ps(m1.packed[3], m2.packed[3]);
+
+	return result;
+}
+
+//subtraction:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_sub)(QMmat3 m1, QMmat3 m2)
+{
+	QMmat3 result;
+
+	result.m[0][0] = m1.m[0][0] - m2.m[0][0];
+	result.m[0][1] = m1.m[0][1] - m2.m[0][1];
+	result.m[0][2] = m1.m[0][2] - m2.m[0][2];
+	result.m[1][0] = m1.m[1][0] - m2.m[1][0];
+	result.m[1][1] = m1.m[1][1] - m2.m[1][1];
+	result.m[1][2] = m1.m[1][2] - m2.m[1][2];
+	result.m[2][0] = m1.m[2][0] - m2.m[2][0];
+	result.m[2][1] = m1.m[2][1] - m2.m[2][1];
+	result.m[2][2] = m1.m[2][2] - m2.m[2][2];
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_sub)(QMmat4 m1, QMmat4 m2)
+{
+	QMmat4 result;
+
+	result.packed[0] = _mm_sub_ps(m1.packed[0], m2.packed[0]);
+	result.packed[1] = _mm_sub_ps(m1.packed[1], m2.packed[1]);
+	result.packed[2] = _mm_sub_ps(m1.packed[2], m2.packed[2]);
+	result.packed[3] = _mm_sub_ps(m1.packed[3], m2.packed[3]);
+
+	return result;
+}
+
+//multiplication:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_mult)(QMmat3 m1, QMmat3 m2)
+{
+	QMmat3 result;
+
+	result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[1][0] * m2.m[0][1] + m1.m[2][0] * m2.m[0][2];
+	result.m[0][1] = m1.m[0][1] * m2.m[0][0] + m1.m[1][1] * m2.m[0][1] + m1.m[2][1] * m2.m[0][2];
+	result.m[0][2] = m1.m[0][2] * m2.m[0][0] + m1.m[1][2] * m2.m[0][1] + m1.m[2][2] * m2.m[0][2];
+	result.m[1][0] = m1.m[0][0] * m2.m[1][0] + m1.m[1][0] * m2.m[1][1] + m1.m[2][0] * m2.m[1][2];
+	result.m[1][1] = m1.m[0][1] * m2.m[1][0] + m1.m[1][1] * m2.m[1][1] + m1.m[2][1] * m2.m[1][2];
+	result.m[1][2] = m1.m[0][2] * m2.m[1][0] + m1.m[1][2] * m2.m[1][1] + m1.m[2][2] * m2.m[1][2];
+	result.m[2][0] = m1.m[0][0] * m2.m[2][0] + m1.m[1][0] * m2.m[2][1] + m1.m[2][0] * m2.m[2][2];
+	result.m[2][1] = m1.m[0][1] * m2.m[2][0] + m1.m[1][1] * m2.m[2][1] + m1.m[2][1] * m2.m[2][2];
+	result.m[2][2] = m1.m[0][2] * m2.m[2][0] + m1.m[1][2] * m2.m[2][1] + m1.m[2][2] * m2.m[2][2];
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_mult)(QMmat4 m1, QMmat4 m2)
+{
+	QMmat4 result;
+
+	result.packed[0] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[0], m1);
+	result.packed[1] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[1], m1);
+	result.packed[2] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[2], m1);
+	result.packed[3] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[3], m1);
+
+	return result;
+}
+
+QM_INLINE QMvec3 QM_PREFIX(mat3_mult_vec3)(QMmat3 m, QMvec3 v)
+{
+	QMvec3 result;
+
+	result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z;
+	result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z;
+	result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z;
+
+	return result;
+}
+
+QM_INLINE QMvec4 QM_PREFIX(mat4_mult_vec4)(QMmat4 m, QMvec4 v)
+{
+	QMvec4 result;
+
+	result.packed = QM_PREFIX(mat4_mult_column_sse)(v.packed, m);
+
+	return result;
+}
+
+//transpose:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_transpose)(QMmat3 m)
+{
+	QMmat3 result;
+
+	result.m[0][0] = m.m[0][0];
+	result.m[0][1] = m.m[1][0];
+	result.m[0][2] = m.m[2][0];
+	result.m[1][0] = m.m[0][1];
+	result.m[1][1] = m.m[1][1];
+	result.m[1][2] = m.m[2][1];
+	result.m[2][0] = m.m[0][2];
+	result.m[2][1] = m.m[1][2];
+	result.m[2][2] = m.m[2][2];
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_transpose)(QMmat4 m)
+{
+	QMmat4 result = m;
+
+	_MM_TRANSPOSE4_PS(result.packed[0], result.packed[1], result.packed[2], result.packed[3]);
+
+	return result;
+}
+
+//inverse:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_inv)(QMmat3 m)
+{
+	QMmat3 result;
+
+	float det;
+  	float a = m.m[0][0], b = m.m[0][1], c = m.m[0][2],
+	      d = m.m[1][0], e = m.m[1][1], f = m.m[1][2],
+	      g = m.m[2][0], h = m.m[2][1], i = m.m[2][2];
+
+	result.m[0][0] =   e * i - f * h;
+	result.m[0][1] = -(b * i - h * c);
+	result.m[0][2] =   b * f - e * c;
+	result.m[1][0] = -(d * i - g * f);
+	result.m[1][1] =   a * i - c * g;
+	result.m[1][2] = -(a * f - d * c);
+	result.m[2][0] =   d * h - g * e;
+	result.m[2][1] = -(a * h - g * b);
+	result.m[2][2] =   a * e - b * d;
+
+	det = 1.0f / (a * result.m[0][0] + b * result.m[1][0] + c * result.m[2][0]);
+
+	result.m[0][0] *= det;
+	result.m[0][1] *= det;
+	result.m[0][2] *= det;
+	result.m[1][0] *= det;
+	result.m[1][1] *= det;
+	result.m[1][2] *= det;
+	result.m[2][0] *= det;
+	result.m[2][1] *= det;
+	result.m[2][2] *= det;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_inv)(QMmat4 mat)
+{
+	//TODO: this function is not SIMD optimized, figure out how to do it
+
+	QMmat4 result;
+
+	float tmp[6];
+	float det;
+	float a = mat.m[0][0], b = mat.m[0][1], c = mat.m[0][2], d = mat.m[0][3],
+	      e = mat.m[1][0], f = mat.m[1][1], g = mat.m[1][2], h = mat.m[1][3],
+	      i = mat.m[2][0], j = mat.m[2][1], k = mat.m[2][2], l = mat.m[2][3],
+	      m = mat.m[3][0], n = mat.m[3][1], o = mat.m[3][2], p = mat.m[3][3];
+
+	tmp[0] = k * p - o * l; 
+	tmp[1] = j * p - n * l; 
+	tmp[2] = j * o - n * k;
+	tmp[3] = i * p - m * l; 
+	tmp[4] = i * o - m * k; 
+	tmp[5] = i * n - m * j;
+
+	result.m[0][0] =   f * tmp[0] - g * tmp[1] + h * tmp[2];
+	result.m[1][0] = -(e * tmp[0] - g * tmp[3] + h * tmp[4]);
+	result.m[2][0] =   e * tmp[1] - f * tmp[3] + h * tmp[5];
+	result.m[3][0] = -(e * tmp[2] - f * tmp[4] + g * tmp[5]);
+
+	result.m[0][1] = -(b * tmp[0] - c * tmp[1] + d * tmp[2]);
+	result.m[1][1] =   a * tmp[0] - c * tmp[3] + d * tmp[4];
+	result.m[2][1] = -(a * tmp[1] - b * tmp[3] + d * tmp[5]);
+	result.m[3][1] =   a * tmp[2] - b * tmp[4] + c * tmp[5];
+
+	tmp[0] = g * p - o * h;
+	tmp[1] = f * p - n * h;
+	tmp[2] = f * o - n * g;
+	tmp[3] = e * p - m * h;
+	tmp[4] = e * o - m * g;
+	tmp[5] = e * n - m * f;
+
+	result.m[0][2] =   b * tmp[0] - c * tmp[1] + d * tmp[2];
+	result.m[1][2] = -(a * tmp[0] - c * tmp[3] + d * tmp[4]);
+	result.m[2][2] =   a * tmp[1] - b * tmp[3] + d * tmp[5];
+	result.m[3][2] = -(a * tmp[2] - b * tmp[4] + c * tmp[5]);
+
+	tmp[0] = g * l - k * h;
+	tmp[1] = f * l - j * h;
+	tmp[2] = f * k - j * g;
+	tmp[3] = e * l - i * h;
+	tmp[4] = e * k - i * g;
+	tmp[5] = e * j - i * f;
+
+	result.m[0][3] = -(b * tmp[0] - c * tmp[1] + d * tmp[2]);
+	result.m[1][3] =   a * tmp[0] - c * tmp[3] + d * tmp[4];
+	result.m[2][3] = -(a * tmp[1] - b * tmp[3] + d * tmp[5]);
+  	result.m[3][3] =   a * tmp[2] - b * tmp[4] + c * tmp[5];
+
+  	det = 1.0f / (a * result.m[0][0] + b * result.m[1][0]
+                + c * result.m[2][0] + d * result.m[3][0]);
+
+	__m128 scale = _mm_set1_ps(det);
+	result.packed[0] = _mm_mul_ps(result.packed[0], scale);
+	result.packed[1] = _mm_mul_ps(result.packed[1], scale);
+	result.packed[2] = _mm_mul_ps(result.packed[2], scale);
+	result.packed[3] = _mm_mul_ps(result.packed[3], scale);
+
+  	return result;
+}
+
+//translation:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_translate)(QMvec2 t)
+{
+	QMmat3 result = QM_PREFIX(mat3_identity)();
+
+	result.m[2][0] = t.x;
+	result.m[2][1] = t.y;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_translate)(QMvec3 t)
+{
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	result.m[3][0] = t.x;
+	result.m[3][1] = t.y;
+	result.m[3][2] = t.z;
+
+	return result;
+}
+
+//scaling:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_scale)(QMvec2 s)
+{
+	QMmat3 result = QM_PREFIX(mat3_identity)();
+
+	result.m[0][0] = s.x;
+	result.m[1][1] = s.y;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_scale)(QMvec3 s)
+{
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	result.m[0][0] = s.x;
+	result.m[1][1] = s.y;
+	result.m[2][2] = s.z;
+
+	return result;
+}
+
+//rotation:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
+{
+	//TODO: test
+
+	QMmat3 result = QM_PREFIX(mat3_identity)();
+
+	float radians = QM_PREFIX(deg_to_rad)(angle);
+	float sine   = QM_SINF(radians);
+	float cosine = QM_COSF(radians);
+
+	result.m[0][0] = cosine;
+	result.m[1][0] =   sine;
+	result.m[0][1] =  -sine;
+	result.m[1][1] = cosine;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 angles)
+{
+	//TODO: test
+
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	QMvec3 radians;
+	radians.x = QM_PREFIX(deg_to_rad)(angles.x);
+	radians.y = QM_PREFIX(deg_to_rad)(angles.y);
+	radians.z = QM_PREFIX(deg_to_rad)(angles.z);
+
+	float sinX = QM_SINF(radians.x);
+	float cosX = QM_COSF(radians.x);
+	float sinY = QM_SINF(radians.y);
+	float cosY = QM_COSF(radians.y);
+	float sinZ = QM_SINF(radians.z);
+	float cosZ = QM_COSF(radians.z);
+
+	float sinXsinY = sinX * sinY;
+	float cosXsinY = cosX * sinY;
+
+	result.m[0][0] = cosY * cosZ;
+	result.m[0][1] = cosY * sinZ;
+	result.m[0][2] = -sinY;
+	result.m[1][0] = sinXsinY * cosZ - cosX * sinZ;
+	result.m[1][1] = sinXsinY * sinZ + cosX * cosZ;
+	result.m[1][2] = sinX * cosY;
+	result.m[2][0] = cosXsinY * cosZ + sinX * sinZ;
+	result.m[2][1] = cosXsinY * sinZ - sinX * cosZ;
+	result.m[2][2] = cosX * cosY;
+
+	return result;
+}
+
+//projection:
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near, float far)
+{
+	//TODO: test
+
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	float scale = QM_TANF(QM_PREFIX(deg_to_rad)(fov * 0.5f)) * near;
+
+	float right = aspect * scale;
+	float left  = -right;
+	float top   = scale;
+	float bot   = -top;
+
+	result.m[0][0] = near / right;
+	result.m[1][1] = near / top;
+	result.m[2][2] = -(far + near) / (far - near);
+	result.m[3][2] = -2.0f * far * near / (far - near);
+	result.m[2][3] = -1.0f;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_orthographic)(float left, float right, float bot, float top, float near, float far)
+{
+	//TODO: test
+
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	result.m[0][0] = 2.0f / (right - left);
+	result.m[1][1] = 2.0f / (top - bot);
+	result.m[2][2] = 2.0f / (near - far);
+
+	result.m[3][0] = (left + right) / (left - right);
+	result.m[3][1] = (bot  + top  ) / (bot  - top  );
+	result.m[3][2] = (near + far  ) / (near - far  );
+
+	return result;
+}
+
+//view matrix:
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
+{
+	//TODO: test
+
+	QMmat4 result;
+
+	QMvec3 r = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_cross)(up, dir));
+	QMvec3 u = QM_PREFIX(vec3_cross)(dir, r);
+
+	QMmat4 RUD = QM_PREFIX(mat4_identity)();
+	RUD.m[0][0] = r.x;
+	RUD.m[1][0] = r.y;
+	RUD.m[2][0] = r.z;
+	RUD.m[0][1] = u.x;
+	RUD.m[1][1] = u.y;
+	RUD.m[2][1] = u.z;
+	RUD.m[0][2] = dir.x;
+	RUD.m[1][2] = dir.y;
+	RUD.m[2][2] = dir.z;
+
+	QMvec3 oppPos = {-pos.x, -pos.y, -pos.y};	
+	result = QM_PREFIX(mat4_mult)(RUD, QM_PREFIX(mat4_translate)(oppPos));
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
+{
+	//TODO: test
+
+	QMmat4 result;
+
+	QMvec3 dir = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_sub)(pos, target));
+	result = QM_PREFIX(mat4_look)(pos, dir, up);
 
 	return result;
 }
