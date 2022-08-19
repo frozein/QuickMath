@@ -897,7 +897,33 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 angles)
+QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
+{
+	//TODO: test
+
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	axis = QM_PREFIX(vec3_normalize)(axis);
+
+	float radians = QM_PREFIX(deg_to_rad)(angle);
+	float sine    = QM_SINF(radians);
+	float cosine  = QM_COSF(radians);
+	float cosine2 = 1.0f - cosine;
+
+	result.m[0][0] = axis.x * axis.x * cosine2 + cosine;
+	result.m[0][1] = axis.x * axis.y * cosine2 + axis.z * sine;
+	result.m[0][2] = axis.x * axis.z * cosine2 - axis.y * sine;
+	result.m[1][0] = axis.y * axis.x * cosine2 - axis.z * sine;
+	result.m[1][1] = axis.y * axis.y * cosine2 + cosine;
+	result.m[1][2] = axis.y * axis.z * cosine2 + axis.x * sine;
+	result.m[2][0] = axis.z * axis.x * cosine2 + axis.y * sine;
+	result.m[2][1] = axis.z * axis.y * cosine2 - axis.x * sine;
+	result.m[2][2] = axis.z * axis.z * cosine2 + cosine;
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 {
 	//TODO: test
 
@@ -915,17 +941,14 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 angles)
 	float sinZ = QM_SINF(radians.z);
 	float cosZ = QM_COSF(radians.z);
 
-	float sinXsinY = sinX * sinY;
-	float cosXsinY = cosX * sinY;
-
 	result.m[0][0] = cosY * cosZ;
 	result.m[0][1] = cosY * sinZ;
 	result.m[0][2] = -sinY;
-	result.m[1][0] = sinXsinY * cosZ - cosX * sinZ;
-	result.m[1][1] = sinXsinY * sinZ + cosX * cosZ;
+	result.m[1][0] = sinX * sinY * cosZ - cosX * sinZ;
+	result.m[1][1] = sinX * sinY * sinZ + cosX * cosZ;
 	result.m[1][2] = sinX * cosY;
-	result.m[2][0] = cosXsinY * cosZ + sinX * sinZ;
-	result.m[2][1] = cosXsinY * sinZ - sinX * cosZ;
+	result.m[2][0] = cosX * sinY * cosZ + sinX * sinZ;
+	result.m[2][1] = cosX * sinY * sinZ - sinX * cosZ;
 	result.m[2][2] = cosX * cosY;
 
 	return result;
