@@ -1035,6 +1035,127 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
 	return result;
 }
 
+//----------------------------------------------------------------------//
+//QUATERNION FUNCTIONS:
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_add)(QMquaternion q1, QMquaternion q2)
+{
+	QMquaternion result;
+
+	result.packed = _mm_add_ps(q1.packed, q2.packed);
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_sub)(QMquaternion q1, QMquaternion q2)
+{
+	QMquaternion result;
+
+	result.packed = _mm_sub_ps(q1.packed, q2.packed);
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_mult)(QMquaternion q1, QMquaternion q2)
+{
+	QMquaternion result;
+
+	__m128 temp1;
+	__m128 temp2;
+
+	temp1 = _mm_shuffle_ps(q1.packed, q2.packed, _MM_SHUFFLE(3, 3, 3, 3));
+	temp2 = q2.packed;
+	result.packed = _mm_mul_ps(temp1, temp2);
+
+	temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(0, 0, 0, 0)), _mm_setr_ps(0.0f, -0.0f, 0.0f, -0.0f));
+	temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(0, 1, 2, 3));
+	result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
+
+	temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(1, 1, 1, 1)), _mm_setr_ps(0.0f, 0.0f, -0.0f, -0.0f));
+	temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(1, 0, 3, 2));
+	result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
+
+	temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setr_ps(-0.0f, 0.0f, 0.0f, -0.0f));
+	temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(2, 3, 0, 1));
+	result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_scale)(QMquaternion q, float s)
+{
+	QMquaternion result;
+
+	__m128 scale = _mm_set1_ps(s);
+	result.packed = _mm_mul_ps(q.packed, scale);
+
+	return result;
+}
+
+QM_INLINE float QM_PREFIX(quaternion_dot)(QMquaternion q1, QMquaternion q2)
+{
+	float result;
+
+	__m128 r = _mm_mul_ps(q1.packed, q2.packed);
+	r = _mm_hadd_ps(r, r);
+	r = _mm_hadd_ps(r, r);
+	_mm_store_ss(&result, r);
+
+	return result;
+}
+
+QM_INLINE float QM_PREFIX(quaternion_length)(QMquaternion q)
+{
+	float result;
+
+	result = QM_SQRTF(QM_PREFIX(quaternion_dot)(q, q));
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_normaize)(QMquaternion q)
+{
+	QMquaternion result = {};
+
+	float invLen = QM_PREFIX(quaternion_length)(q);
+	if(invLen != 0.0f)
+	{
+		invLen = 1.0f / invLen;
+
+		__m128 scale = _mm_set1_ps(invLen);
+		result.packed = _mm_mul_ps(q.packed, scale);
+	}
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_conjugate)(QMquaternion q)
+{
+	QMquaternion result;
+
+	result.x = -q.x;
+	result.y = -q.y;
+	result.z = -q.z;
+	result.w = q.w;
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
+{
+	QMquaternion result;
+
+	result.x = -q.x;
+	result.y = -q.y;
+	result.z = -q.z;
+	result.w = q.w;
+
+	__m128 scale = _mm_set1_ps(QM_PREFIX(quaternion_dot)(q, q));
+	_mm_div_ps(result.packed, scale);
+
+	return result;
+}
+
 #ifdef __cplusplus
 } //extern "C"
 #endif
