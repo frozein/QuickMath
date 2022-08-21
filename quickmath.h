@@ -1,4 +1,6 @@
-/* quickmath.h
+/* ------------------------------------------------------------------------
+ *
+ * quickmath.h
  * author: Daniel Elwell (2022)
  * license: MIT
  * description: a single-header library for common vector, matrix, and quaternion math
@@ -6,36 +8,66 @@
  * 
  * ------------------------------------------------------------------------
  * 
- * to disable the need to link with the C runtime library, you change the #defines to:
- * "#define QM_SQRTF yourSqrtf"
- * "#define QM_SINF yourSinf"
- * "#define QM_COSF yourCosf"
- * "#define QM_ACOSF yourAcosf"
- * and replace the "#include <math.h>" with your own header where the
- * above functions are declared
+ * to disable the need to link with the C runtime library, change the macros beginning
+ * on line 93 and the #include on line 91 to the appropirate functions/files
  * 
- * to change the function prefixes (default is "QM_"), you must either:
- * "#define QM_PREFIX"                        //for no prefix
- * "#define QM_PREFIX(name) yourPrefix##name" //for a custom prefix
- * in one source file before this file is "#include"d
+ * to change or disable the function prefix (the default is "QM_"), change the macro on
+ * line 87 to contain the desired prefix, or "#define QM_PREFIX" for no prefix
  * 
  * ------------------------------------------------------------------------
+ * 
  * the following functions are defined:
  * (QMvecn means a vector of dimension, 2, 3, or 4, named QMvec2, QMvec3, and QMvec4)
+ * (QMmatn means a matrix of dimensions 3x3 or 4x4, named QMmat3 and QMmat4)
  * 
- * QMvecn QM_vecn_add       (QMvecn v1, QMvecn v2); //adds two vectors
- * QMvecn QM_vecn_sub       (QMvecn v1, QMvecn v2); //subtracts two vectors
- * QMvecn QM_vecn_mult      (QMvecn v1, QMvecn v2); //multiplies two vectors
- * QMvecn QM_vecn_div       (QMvecn v1, QMvecn v2); //divides two vectors
- * QMvecn QM_vecn_scale     (QMvecn v , float  s ); //multiplies each of a vector's components
- * QMvecn QM_vecn_dot       (QMvecn v1, QMvecn v2); //computes the dot product of two vectors
- * QMvec3 QM_vec3_cross     (QMvec3 v1, QMvec3 v2); //computes the cross product of two 3D vectors
- * float  QM_vecn_length    (QMvecn v);             //computes the length of a vector
- * QMvecn QM_vecn_normalize (QMvecn v);             //normalizes a vector
- * float  QM_vecn_distance  (QMvecn v1, QMvecn v2); //computes the distance between two vectors
- * int    QM_vecn_equals    (QMvecn v1, QMvecn v2); //checks two vectors for equality
- * QMvecn QM_vecn_min       (QMvecn v1, QMvecn v2); //takes the component-wise minimum of two vectors
- * QMvecn QM_vecn_max       (QMvecn v1, QMvecn v2); //takes the component-wise maximum of two vectors
+ * QMvecn       QM_vecn_add                   (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_sub                   (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_mult                  (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_div                   (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_scale                 (QMvecn v , float  s );
+ * QMvecn       QM_vecn_dot                   (QMvecn v1, QMvecn v2);
+ * QMvec3       QM_vec3_cross                 (QMvec3 v1, QMvec3 v2);
+ * float        QM_vecn_length                (QMvecn v);
+ * QMvecn       QM_vecn_normalize             (QMvecn v);
+ * float        QM_vecn_distance              (QMvecn v1, QMvecn v2);
+ * int          QM_vecn_equals                (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_min                   (QMvecn v1, QMvecn v2);
+ * QMvecn       QM_vecn_max                   (QMvecn v1, QMvecn v2);
+ * 
+ * QMmatn       QM_matn_identity              ();
+ * QMmatn       QM_matn_add                   (QMmatn m1, QMmatn m2);
+ * QMmatn       QM_matn_sub                   (QMmatn m1, QMmatn m2);
+ * QMmatn       QM_matn_mult                  (QMmatn m1, QMmatn m2);
+ * QMvecn       QM_matn_mult_vecn             (QMmatn m , QMvecn v );
+ * QMmatn       QM_matn_transpose             (QMmatn m);
+ * QMmatn       QM_matn_inv                   (QMmatn m);
+ * 
+ * QMmat3       QM_mat3_translate             (QMvec2 t);
+ * QMmat4       QM_mat4_translate             (QMvec3 t);
+ * QMmat3       QM_mat3_scale                 (QMvec2 s);
+ * QMmat4       QM_mat4_scale                 (QMvec3 s);
+ * QMmat3       QM_mat3_rotate                (float angle);
+ * QMmat4       QM_mat4_rotate                (QMvec3 axis, float angle);
+ * QMmat4       QM_mat4_rotate_euler          (QMvec3 angles);
+ * 
+ * QMmat4       QM_mat4_prespective           (float fov, float aspect, float near, float far);
+ * QMmat4       QM_mat4_orthographic          (float left, float right, float bot, float top, float near, float far);
+ * QMmat4       QM_mat4_look                  (QMvec3 pos, QMvec3 dir   , QMvec3 up);
+ * QMmat4       QM_mat4_lookat                (QMvec3 pos, QMvec3 target, QMvec3 up);
+ * 
+ * QMquaternion QM_quaternion_add             (QMquaternion q1, QMquaternion q2);
+ * QMquaternion QM_quaternion_sub             (QMquaternion q1, QMquaternion q2);
+ * QMquaternion QM_quaternion_mult            (QMquaternion q1, QMquaternion q2);
+ * QMquaternion QM_quaternion_scale           (QMquaternion q, float s);
+ * QMquaternion QM_quaternion_dot             (QMquaternion q1, QMquaternion q2);
+ * float        QM_quaternion_length          (QMquaternion q);
+ * QMquaternion QM_quaternion_normalize       (QMquaternion q);
+ * QMquaternion QM_quaternion_conjugate       (QMquaternion q);
+ * QMquaternion QM_quaternion_inv             (QMquaternion q);
+ * QMquaternion QM_quaternion_slerp           (QMquaternion q1, QMquaternion q2, float a);
+ * QMquaternion QM_quaternion_from_axis_angle (QMvec3 axis, float angle);
+ * QMquaternion QM_quaternion_from_euler      (QMvec3 angles);
+ * QMmat4       QM_quaternion_to_mat4         (QMquaternion q);
  */
 
 #ifndef QM_MATH_H
@@ -51,11 +83,8 @@ extern "C"
 #define QM_INLINE static inline
 
 //if you wish to set your own function prefix or remove it entirely,
-//simple "#define QM_PREFIX(name) [yourPrefix]##name" in one source file 
-//before including this file
-#ifndef QM_PREFIX
-	#define QM_PREFIX(name) QM_##name
-#endif
+//simply change this macro:
+#define QM_PREFIX(name) QM_##name
 
 //if you wish to not use any of the CRT functions, you must #define your
 //own versions of the below functions and #include the appropriate header
