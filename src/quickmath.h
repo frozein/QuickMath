@@ -884,8 +884,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_scale)(QMvec3 s)
 
 QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
 {
-	//TODO: test
-
 	QMmat3 result = QM_PREFIX(mat3_identity)();
 
 	float radians = QM_PREFIX(deg_to_rad)(angle);
@@ -902,8 +900,6 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
 {
-	//TODO: test
-
 	QMmat4 result = QM_PREFIX(mat4_identity)();
 
 	axis = QM_PREFIX(vec3_normalize)(axis);
@@ -928,8 +924,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 {
-	//TODO: test
-
 	QMmat4 result = QM_PREFIX(mat4_identity)();
 
 	QMvec3 radians;
@@ -961,8 +955,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near, float far)
 {
-	//TODO: test
-
 	QMmat4 result = QM_PREFIX(mat4_identity)();
 
 	float scale = QM_TANF(QM_PREFIX(deg_to_rad)(fov * 0.5f)) * near;
@@ -983,8 +975,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_orthographic)(float left, float right, float bot, float top, float near, float far)
 {
-	//TODO: test
-
 	QMmat4 result = QM_PREFIX(mat4_identity)();
 
 	result.m[0][0] = 2.0f / (right - left);
@@ -1002,8 +992,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_orthographic)(float left, float right, float bot
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 {
-	//TODO: test
-
 	QMmat4 result;
 
 	QMvec3 r = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_cross)(up, dir));
@@ -1028,8 +1016,6 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
 {
-	//TODO: test
-
 	QMmat4 result;
 
 	QMvec3 dir = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_sub)(pos, target));
@@ -1161,8 +1147,6 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
 
 QM_INLINE QMquaternion QM_PREFIX(quaternion_slerp)(QMquaternion q1, QMquaternion q2, float a)
 {
-	//TODO: test
-
 	QMquaternion result;
 
 	float cosine = QM_PREFIX(quaternion_dot)(q1, q2);
@@ -1183,8 +1167,6 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_slerp)(QMquaternion q1, QMquaternion
 
 QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float angle)
 {
-	//TODO: test
-
 	QMquaternion result;
 
 	float radians = QM_PREFIX(deg_to_rad)(angle * 0.5f);
@@ -1201,8 +1183,6 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float 
 
 QM_INLINE QMquaternion QM_PREFIX(quaternion_from_euler)(QMvec3 angles)
 {
-	//TODO: test
-
 	QMquaternion result;
 
 	QMvec3 radians;
@@ -1234,8 +1214,6 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_from_euler)(QMvec3 angles)
 
 QM_INLINE QMmat4 QM_PREFIX(quaternion_to_mat4)(QMquaternion q)
 {
-	//TODO: test
-
 	QMmat4 result = QM_PREFIX(mat4_identity)();
 
 	float x2  = q.x + q.x;
