@@ -392,7 +392,7 @@ QM_INLINE float QM_PREFIX(vec4_length)(QMvec4 v)
 
 QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
 {
-	QMvec2 result = {};
+	QMvec2 result = {0};
 
 	float invLen = QM_PREFIX(vec2_length)(v);
 	if(invLen != 0.0f)
@@ -407,7 +407,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
 
 QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
 {
-	QMvec3 result = {};
+	QMvec3 result = {0};
 
 	float invLen = QM_PREFIX(vec3_length)(v);
 	if(invLen != 0.0f)
@@ -423,7 +423,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
 
 QM_INLINE QMvec4 QM_PREFIX(vec4_normalize)(QMvec4 v)
 {
-	QMvec4 result = {};
+	QMvec4 result = {0};
 
 	float invLen = QM_PREFIX(vec4_length)(v);
 	if(invLen != 0.0f)
@@ -1020,7 +1020,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 	RUD.m[1][2] = dir.y;
 	RUD.m[2][2] = dir.z;
 
-	QMvec3 oppPos = {-pos.x, -pos.y, -pos.y};	
+	QMvec3 oppPos = {-pos.x, -pos.y, -pos.z};	
 	result = QM_PREFIX(mat4_mult)(RUD, QM_PREFIX(mat4_translate)(oppPos));
 
 	return result;
@@ -1118,7 +1118,7 @@ QM_INLINE float QM_PREFIX(quaternion_length)(QMquaternion q)
 
 QM_INLINE QMquaternion QM_PREFIX(quaternion_normalize)(QMquaternion q)
 {
-	QMquaternion result = {};
+	QMquaternion result = {0};
 
 	float invLen = QM_PREFIX(quaternion_length)(q);
 	if(invLen != 0.0f)
@@ -1192,8 +1192,8 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float 
 	float sine = QM_SINF(radians);
 
 	result.x = axis.x * sine;
-	result.y = axis.x * sine;
-	result.z = axis.x * sine;
+	result.y = axis.y * sine;
+	result.z = axis.z * sine;
 	result.w = QM_COSF(radians);
 
 	return result;
