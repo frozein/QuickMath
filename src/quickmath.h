@@ -6,10 +6,11 @@
  * 
  * ------------------------------------------------------------------------
  * 
- * to disable the need to link with the C runtime library, you must:
+ * to disable the need to link with the C runtime library, you change the #defines to:
  * "#define QM_SQRTF yourSqrtf"
  * "#define QM_SINF yourSinf"
  * "#define QM_COSF yourCosf"
+ * "#define QM_ACOSF yourAcosf"
  * and replace the "#include <math.h>" with your own header where the
  * above functions are declared
  * 
@@ -61,9 +62,10 @@ extern "C"
 #include <math.h>
 
 #define QM_SQRTF sqrtf
-#define QM_SINF sinf
-#define QM_COSF cosf
-#define QM_TANF tanf
+#define QM_SINF  sinf
+#define QM_COSF  cosf
+#define QM_TANF  tanf
+#define QM_ACOSF acosf
 
 //----------------------------------------------------------------------//
 //STRUCT DEFINITIONS:
@@ -124,6 +126,7 @@ typedef union
 
 #define QM_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define QM_MAX(x, y) ((x) > (y) ? (x) : (y))
+#define QM_ABS(x) ((x) > 0 ? (x) : -(x))
 
 QM_INLINE float QM_PREFIX(rad_to_deg)(float rad)
 {
@@ -1113,7 +1116,7 @@ QM_INLINE float QM_PREFIX(quaternion_length)(QMquaternion q)
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_normaize)(QMquaternion q)
+QM_INLINE QMquaternion QM_PREFIX(quaternion_normalize)(QMquaternion q)
 {
 	QMquaternion result = {};
 
@@ -1152,6 +1155,111 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
 
 	__m128 scale = _mm_set1_ps(QM_PREFIX(quaternion_dot)(q, q));
 	_mm_div_ps(result.packed, scale);
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_slerp)(QMquaternion q1, QMquaternion q2, float a)
+{
+	//TODO: test
+
+	QMquaternion result;
+
+	float cosine = QM_PREFIX(quaternion_dot)(q1, q2);
+	float angle = QM_ACOSF(cosine);
+
+	float sine1 = QM_SINF((1.0f - a) * angle);
+	float sine2 = QM_SINF(a * angle);
+	float invSine = 1.0f / QM_SINF(angle);
+
+	q1 = QM_PREFIX(quaternion_scale)(q1, sine1);
+	q2 = QM_PREFIX(quaternion_scale)(q2, sine2);
+
+	result = QM_PREFIX(quaternion_add)(q1, q2);
+	result = QM_PREFIX(quaternion_scale)(result, invSine);
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float angle)
+{
+	//TODO: test
+
+	QMquaternion result;
+
+	float radians = QM_PREFIX(deg_to_rad)(angle * 0.5f);
+	axis = QM_PREFIX(vec3_normalize)(axis);
+	float sine = QM_SINF(radians);
+
+	result.x = axis.x * sine;
+	result.y = axis.x * sine;
+	result.z = axis.x * sine;
+	result.w = QM_COSF(radians);
+
+	return result;
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_from_euler)(QMvec3 angles)
+{
+	//TODO: test
+
+	QMquaternion result;
+
+	QMvec3 radians;
+	radians.x = QM_PREFIX(deg_to_rad)(angles.x * 0.5f);
+	radians.y = QM_PREFIX(deg_to_rad)(angles.y * 0.5f);
+	radians.z = QM_PREFIX(deg_to_rad)(angles.z * 0.5f);
+
+	float sinx = QM_SINF(radians.x);
+	float cosx = QM_COSF(radians.x);
+	float siny = QM_SINF(radians.y);
+	float cosy = QM_COSF(radians.y);
+	float sinz = QM_SINF(radians.z);
+	float cosz = QM_COSF(radians.z);
+
+	__m128 packedx = _mm_setr_ps(sinx, cosx, cosx, cosx);
+	__m128 packedy = _mm_setr_ps(cosy, siny, cosy, cosy);
+	__m128 packedz = _mm_setr_ps(cosz, cosz, sinz, cosz);
+
+	result.packed = _mm_mul_ps(_mm_mul_ps(packedx, packedy), packedz);
+
+	packedx = _mm_shuffle_ps(packedx, packedx, _MM_SHUFFLE(0, 0, 0, 1));
+	packedy = _mm_shuffle_ps(packedy, packedy, _MM_SHUFFLE(1, 1, 0, 1));
+	packedz = _mm_shuffle_ps(packedz, packedz, _MM_SHUFFLE(2, 0, 2, 2));
+
+	result.packed = _mm_addsub_ps(result.packed, _mm_mul_ps(_mm_mul_ps(packedx, packedy), packedz));
+
+	return result;
+}
+
+QM_INLINE QMmat4 QM_PREFIX(quaternion_to_mat4)(QMquaternion q)
+{
+	//TODO: test
+
+	QMmat4 result = QM_PREFIX(mat4_identity)();
+
+	float x2  = q.x + q.x;
+    float y2  = q.y + q.y;
+    float z2  = q.z + q.z;
+    float xx2 = q.x * x2;
+    float xy2 = q.x * y2;
+    float xz2 = q.x * z2;
+    float yy2 = q.y * y2;
+    float yz2 = q.y * z2;
+    float zz2 = q.z * z2;
+    float sx2 = q.w * x2;
+    float sy2 = q.w * y2;
+    float sz2 = q.w * z2;
+
+	result.m[0][0] = 1.0f - (yy2 + zz2);
+	result.m[0][1] = xy2 - sz2;
+	result.m[0][2] = xz2 + sy2;
+	result.m[1][0] = xy2 + sz2;
+	result.m[1][1] = 1.0f - (xx2 + zz2);
+	result.m[1][2] = yz2 - sx2;
+	result.m[2][0] = xz2 - sy2;
+	result.m[2][1] = yz2 + sx2;
+	result.m[2][2] = 1.0f - (xx2 + yy2);
 
 	return result;
 }
