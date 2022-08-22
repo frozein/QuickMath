@@ -49,7 +49,8 @@
  * QMmat3       QM_mat3_rotate                (float angle);
  * QMmat4       QM_mat4_rotate                (QMvec3 axis, float angle);
  * QMmat4       QM_mat4_rotate_euler          (QMvec3 angles);
- * 
+ * QMmat3       QM_mat4_top_left              (QMmat4 m);
+ *
  * QMmat4       QM_mat4_prespective           (float fov, float aspect, float near, float far);
  * QMmat4       QM_mat4_orthographic          (float left, float right, float bot, float top, float near, float far);
  * QMmat4       QM_mat4_look                  (QMvec3 pos, QMvec3 dir   , QMvec3 up);
@@ -976,6 +977,25 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 	result.m[2][0] = cosX * sinY * cosZ + sinX * sinZ;
 	result.m[2][1] = cosX * sinY * sinZ - sinX * cosZ;
 	result.m[2][2] = cosX * cosY;
+
+	return result;
+}
+
+//to mat3:
+
+QM_INLINE QMmat3 QM_PREFIX(mat4_top_left)(QMmat4 m)
+{
+	QMmat3 result;
+
+	result.m[0][0] = m.m[0][0];
+	result.m[0][1] = m.m[0][1];
+	result.m[0][2] = m.m[0][2];
+	result.m[1][0] = m.m[1][0];
+	result.m[1][1] = m.m[1][1];
+	result.m[1][2] = m.m[1][2];
+	result.m[2][0] = m.m[2][0];
+	result.m[2][1] = m.m[2][1];
+	result.m[2][2] = m.m[2][2];
 
 	return result;
 }
