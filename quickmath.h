@@ -1004,7 +1004,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat4_top_left)(QMmat4 m)
 
 QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near, float far)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = {0};
 
 	float scale = QM_TANF(QM_PREFIX(deg_to_rad)(fov * 0.5f)) * near;
 
