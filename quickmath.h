@@ -8,7 +8,7 @@
  * 
  * ------------------------------------------------------------------------
  * 
- * to change or disable the function prefix (the default is "QM_"), change the macro on
+ * to change or disable the function prefix (the default is "qm_"), change the macro on
  * line 98 to contain the desired prefix, or "#define QM_PREFIX" for no prefix
  * 
  * if you wish not to use SSE3 intrinsics (if they are not supported for example),
@@ -23,56 +23,56 @@
  * (QMvecn means a vector of dimension, 2, 3, or 4, named QMvec2, QMvec3, and QMvec4)
  * (QMmatn means a matrix of dimensions 3x3 or 4x4, named QMmat3 and QMmat4)
  * 
- * QMvecn       QM_vecn_add                   (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_sub                   (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_mult                  (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_div                   (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_scale                 (QMvecn v , float  s );
- * QMvecn       QM_vecn_dot                   (QMvecn v1, QMvecn v2);
- * QMvec3       QM_vec3_cross                 (QMvec3 v1, QMvec3 v2);
- * float        QM_vecn_length                (QMvecn v);
- * QMvecn       QM_vecn_normalize             (QMvecn v);
- * float        QM_vecn_distance              (QMvecn v1, QMvecn v2);
- * int          QM_vecn_equals                (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_min                   (QMvecn v1, QMvecn v2);
- * QMvecn       QM_vecn_max                   (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_add                   (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_sub                   (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_mult                  (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_div                   (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_scale                 (QMvecn v , float  s );
+ * QMvecn       qm_vecn_dot                   (QMvecn v1, QMvecn v2);
+ * QMvec3       qm_vec3_cross                 (QMvec3 v1, QMvec3 v2);
+ * float        qm_vecn_length                (QMvecn v);
+ * QMvecn       qm_vecn_normalize             (QMvecn v);
+ * float        qm_vecn_distance              (QMvecn v1, QMvecn v2);
+ * int          qm_vecn_equals                (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_min                   (QMvecn v1, QMvecn v2);
+ * QMvecn       qm_vecn_max                   (QMvecn v1, QMvecn v2);
  * 
- * QMmatn       QM_matn_identity              ();
- * QMmatn       QM_matn_add                   (QMmatn m1, QMmatn m2);
- * QMmatn       QM_matn_sub                   (QMmatn m1, QMmatn m2);
- * QMmatn       QM_matn_mult                  (QMmatn m1, QMmatn m2);
- * QMvecn       QM_matn_mult_vecn             (QMmatn m , QMvecn v );
- * QMmatn       QM_matn_transpose             (QMmatn m);
- * QMmatn       QM_matn_inv                   (QMmatn m);
+ * QMmatn       qm_matn_identity              ();
+ * QMmatn       qm_matn_add                   (QMmatn m1, QMmatn m2);
+ * QMmatn       qm_matn_sub                   (QMmatn m1, QMmatn m2);
+ * QMmatn       qm_matn_mult                  (QMmatn m1, QMmatn m2);
+ * QMvecn       qm_matn_mult_vecn             (QMmatn m , QMvecn v );
+ * QMmatn       qm_matn_transpose             (QMmatn m);
+ * QMmatn       qm_matn_inv                   (QMmatn m);
  * 
- * QMmat3       QM_mat3_translate             (QMvec2 t);
- * QMmat4       QM_mat4_translate             (QMvec3 t);
- * QMmat3       QM_mat3_scale                 (QMvec2 s);
- * QMmat4       QM_mat4_scale                 (QMvec3 s);
- * QMmat3       QM_mat3_rotate                (float angle);
- * QMmat4       QM_mat4_rotate                (QMvec3 axis, float angle);
- * QMmat4       QM_mat4_rotate_euler          (QMvec3 angles);
- * QMmat3       QM_mat4_top_left              (QMmat4 m);
+ * QMmat3       qm_mat3_translate             (QMvec2 t);
+ * QMmat4       qm_mat4_translate             (QMvec3 t);
+ * QMmat3       qm_mat3_scale                 (QMvec2 s);
+ * QMmat4       qm_mat4_scale                 (QMvec3 s);
+ * QMmat3       qm_mat3_rotate                (float angle);
+ * QMmat4       qm_mat4_rotate                (QMvec3 axis, float angle);
+ * QMmat4       qm_mat4_rotate_euler          (QMvec3 angles);
+ * QMmat3       qm_mat4_top_left              (QMmat4 m);
  *
- * QMmat4       QM_mat4_prespective           (float fov, float aspect, float near, float far);
- * QMmat4       QM_mat4_orthographic          (float left, float right, float bot, float top, float near, float far);
- * QMmat4       QM_mat4_look                  (QMvec3 pos, QMvec3 dir   , QMvec3 up);
- * QMmat4       QM_mat4_lookat                (QMvec3 pos, QMvec3 target, QMvec3 up);
+ * QMmat4       qm_mat4_prespective           (float fov, float aspect, float near, float far);
+ * QMmat4       qm_mat4_orthographic          (float left, float right, float bot, float top, float near, float far);
+ * QMmat4       qm_mat4_look                  (QMvec3 pos, QMvec3 dir   , QMvec3 up);
+ * QMmat4       qm_mat4_lookat                (QMvec3 pos, QMvec3 target, QMvec3 up);
  * 
- * QMquaternion QM_quaternion_identity        ();
- * QMquaternion QM_quaternion_add             (QMquaternion q1, QMquaternion q2);
- * QMquaternion QM_quaternion_sub             (QMquaternion q1, QMquaternion q2);
- * QMquaternion QM_quaternion_mult            (QMquaternion q1, QMquaternion q2);
- * QMquaternion QM_quaternion_scale           (QMquaternion q, float s);
- * QMquaternion QM_quaternion_dot             (QMquaternion q1, QMquaternion q2);
- * float        QM_quaternion_length          (QMquaternion q);
- * QMquaternion QM_quaternion_normalize       (QMquaternion q);
- * QMquaternion QM_quaternion_conjugate       (QMquaternion q);
- * QMquaternion QM_quaternion_inv             (QMquaternion q);
- * QMquaternion QM_quaternion_slerp           (QMquaternion q1, QMquaternion q2, float a);
- * QMquaternion QM_quaternion_from_axis_angle (QMvec3 axis, float angle);
- * QMquaternion QM_quaternion_from_euler      (QMvec3 angles);
- * QMmat4       QM_quaternion_to_mat4         (QMquaternion q);
+ * QMquaternion qm_quaternion_identity        ();
+ * QMquaternion qm_quaternion_add             (QMquaternion q1, QMquaternion q2);
+ * QMquaternion qm_quaternion_sub             (QMquaternion q1, QMquaternion q2);
+ * QMquaternion qm_quaternion_mult            (QMquaternion q1, QMquaternion q2);
+ * QMquaternion qm_quaternion_scale           (QMquaternion q, float s);
+ * QMquaternion qm_quaternion_dot             (QMquaternion q1, QMquaternion q2);
+ * float        qm_quaternion_length          (QMquaternion q);
+ * QMquaternion qm_quaternion_normalize       (QMquaternion q);
+ * QMquaternion qm_quaternion_conjugate       (QMquaternion q);
+ * QMquaternion qm_quaternion_inv             (QMquaternion q);
+ * QMquaternion qm_quaternion_slerp           (QMquaternion q1, QMquaternion q2, float a);
+ * QMquaternion qm_quaternion_from_axis_angle (QMvec3 axis, float angle);
+ * QMquaternion qm_quaternion_from_euler      (QMvec3 angles);
+ * QMmat4       qm_quaternion_to_mat4         (QMquaternion q);
  */
 
 #ifndef QM_MATH_H
@@ -95,7 +95,7 @@ extern "C"
 
 //if you wish to set your own function prefix or remove it entirely,
 //simply change this macro:
-#define QM_PREFIX(name) QM_##name
+#define QM_PREFIX(name) qm_##name
 
 //if you wish to not use any of the CRT functions, you must #define your
 //own versions of the below functions and #include the appropriate header
