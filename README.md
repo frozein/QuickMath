@@ -2,6 +2,8 @@
 
 A single header, cross-platform, simple math library in under 1700 LOC. Contains common matrix, vector, and quaternion related functions used for graphics/games programming.
 
+Documentation can be found at the top of the file.
+
 ### Features
 - Vector, matrix, and quaternion arithmetic functions
 - Transformation/projection/view matrix functions
