@@ -1304,9 +1304,9 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 	RUD.m[0][1] = u.x;
 	RUD.m[1][1] = u.y;
 	RUD.m[2][1] = u.z;
-	RUD.m[0][2] = dir.x;
-	RUD.m[1][2] = dir.y;
-	RUD.m[2][2] = dir.z;
+	RUD.m[0][2] = -dir.x;
+	RUD.m[1][2] = -dir.y;
+	RUD.m[2][2] = -dir.z;
 
 	QMvec3 oppPos = {-pos.x, -pos.y, -pos.z};	
 	result = QM_PREFIX(mat4_mult)(RUD, QM_PREFIX(mat4_translate)(oppPos));
