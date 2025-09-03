@@ -22,7 +22,11 @@
  * the following functions are defined:
  * (QMvecn means a vector of dimension, 2, 3, or 4, named QMvec2, QMvec3, and QMvec4)
  * (QMmatn means a matrix of dimensions 3x3 or 4x4, named QMmat3 and QMmat4)
+ * (QMbboxn means a bounding box of dimensions 2 or 3)
  * 
+ * QMvecn       qm_vecn_load                  (const float* in);
+ * void         qm_vecn_store                 (QMvecn v, float* out);
+ * QMvecn       qm_vecn_full                  (float val);
  * QMvecn       qm_vecn_add                   (QMvecn v1, QMvecn v2);
  * QMvecn       qm_vecn_sub                   (QMvecn v1, QMvecn v2);
  * QMvecn       qm_vecn_mult                  (QMvecn v1, QMvecn v2);
@@ -37,11 +41,14 @@
  * QMvecn       qm_vecn_min                   (QMvecn v1, QMvecn v2);
  * QMvecn       qm_vecn_max                   (QMvecn v1, QMvecn v2);
  * 
+ * QMmatn       qm_matn_load                  (const float* in);
+ * void         qm_matn_store                 (QMmatn m, float* out);
  * QMmatn       qm_matn_identity              ();
  * QMmatn       qm_matn_add                   (QMmatn m1, QMmatn m2);
  * QMmatn       qm_matn_sub                   (QMmatn m1, QMmatn m2);
  * QMmatn       qm_matn_mult                  (QMmatn m1, QMmatn m2);
  * QMvecn       qm_matn_mult_vecn             (QMmatn m , QMvecn v );
+ * QMvec3       qm_mat4_transform_vec3        (QMmat4 m , QMvec3 v );
  * QMmatn       qm_matn_transpose             (QMmatn m);
  * QMmatn       qm_matn_inv                   (QMmatn m);
  * 
@@ -59,6 +66,8 @@
  * QMmat4       qm_mat4_look                  (QMvec3 pos, QMvec3 dir   , QMvec3 up);
  * QMmat4       qm_mat4_lookat                (QMvec3 pos, QMvec3 target, QMvec3 up);
  * 
+ * QMquaternion qm_quaternion_load            (const float* in);
+ * void         qm_quaternion_store           (QMquaternion q, float* out);
  * QMquaternion qm_quaternion_identity        ();
  * QMquaternion qm_quaternion_add             (QMquaternion q1, QMquaternion q2);
  * QMquaternion qm_quaternion_sub             (QMquaternion q1, QMquaternion q2);
@@ -73,6 +82,20 @@
  * QMquaternion qm_quaternion_from_axis_angle (QMvec3 axis, float angle);
  * QMquaternion qm_quaternion_from_euler      (QMvec3 angles);
  * QMmat4       qm_quaternion_to_mat4         (QMquaternion q);
+ * 
+ * QMbboxn      qm_bboxn_load                 (const float* b);
+ * void         qm_bboxn_store                (QMbboxn b, float* out);
+ * QMbboxn      qm_bboxn_initialized          ();
+ * QMbboxn      qm_bboxn_union                (QMbboxn b1, QMbboxn b2);
+ * void         qm_bboxn_union_inplace        (QMbboxn* b1, QMbboxn b2);
+ * QMbboxn      qm_bboxn_union_vecn           (QMbboxn b, QMvecn v);
+ * void         qm_bboxn_union_vecn_inplace   (QMbboxn* b, QMvecn v);
+ * QMvecn       qm_bboxn_extent               (QMbboxn b);
+ * QMvecn       qm_bboxn_centroid             (QMbboxn b);
+ * QMvecn       qm_bboxn_offset               (QMbboxn b, QMvecn v);
+ * 
+ * float        qm_bbox2_perimeter            (QMbbox2 b);
+ * float        qm_bbox3_surface_area         (QMbbox3 b);
  */
 
 #ifndef QM_MATH_H
@@ -106,6 +129,12 @@ extern "C"
 #define QM_COSF  cosf
 #define QM_TANF  tanf
 #define QM_ACOSF acosf
+
+//remove troublesome win32 #defines
+#ifdef _WIN32
+	#undef near
+	#undef far
+#endif
 
 //----------------------------------------------------------------------//
 //STRUCT DEFINITIONS:
@@ -146,11 +175,13 @@ typedef union
 //-----------------------------//
 //matrices are column-major
 
+//a 3x3 matrix of floats
 typedef union
 {
 	float m[3][3];
 } QMmat3;
 
+//a 4x4 matrix of floats
 typedef union
 {
 	float m[4][4];
@@ -164,6 +195,7 @@ typedef union
 
 //-----------------------------//
 
+//a quaternion
 typedef union
 {
 	float q[4];
@@ -175,6 +207,22 @@ typedef union
 
 	#endif
 } QMquaternion;
+
+//-----------------------------//
+
+//a 2-dimensional bounding box
+typedef struct
+{
+	QMvec2 min;
+	QMvec2 max;
+} QMbbox2;
+
+//a 3-dimensional bounding box
+typedef struct
+{
+	QMvec3 min;
+	QMvec3 max;
+} QMbbox3;
 
 //----------------------------------------------------------------------//
 //HELPER FUNCS:
@@ -211,6 +259,63 @@ QM_INLINE __m128 QM_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2)
 
 //----------------------------------------------------------------------//
 //VECTOR FUNCTIONS:
+
+//loading:
+
+QM_INLINE QMvec2 QM_PREFIX(vec2_load)(const float* in)
+{
+	return (QMvec2){ in[0], in[1] };
+}
+
+QM_INLINE QMvec3 QM_PREFIX(vec3_load)(const float* in)
+{
+	return (QMvec3){ in[0], in[1], in[2] };
+}
+
+QM_INLINE QMvec4 QM_PREFIX(vec4_load)(const float* in)
+{
+	return (QMvec4){ in[0], in[1], in[2], in[3] };
+}
+
+//storing:
+
+QM_INLINE void QM_PREFIX(vec2_store)(QMvec2 v, float* out)
+{
+	out[0] = v.x;
+	out[1] = v.y;
+}
+
+QM_INLINE void QM_PREFIX(vec3_store)(QMvec3 v, float* out)
+{
+	out[0] = v.x;
+	out[1] = v.y;
+	out[2] = v.z;
+}
+
+QM_INLINE void QM_PREFIX(vec4_store)(QMvec4 v, float* out)
+{
+	out[0] = v.x;
+	out[1] = v.y;
+	out[2] = v.z;
+	out[3] = v.w;
+}
+
+//full:
+
+QM_INLINE QMvec2 QM_PREFIX(vec2_full)(float val)
+{
+	return (QMvec2){ val, val };
+}
+
+QM_INLINE QMvec3 QM_PREFIX(vec3_full)(float val)
+{
+	return (QMvec3){ val, val, val };
+}
+
+QM_INLINE QMvec4 QM_PREFIX(vec4_full)(float val)
+{
+	return (QMvec4){ val, val, val, val };
+}
 
 //addition:
 
@@ -721,6 +826,67 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 //----------------------------------------------------------------------//
 //MATRIX FUNCTIONS:
 
+//loading:
+
+QM_INLINE QMmat3 QM_PREFIX(mat3_load)(const float* in)
+{
+	return (QMmat3){
+		in[0], in[1], in[2],
+		in[3], in[4], in[5],
+		in[6], in[7], in[8]
+	};
+}
+
+QM_INLINE QMmat4 QM_PREFIX(mat4_load)(const float* in)
+{
+	return (QMmat4){
+		in[0 ], in[1 ], in[2 ], in[3 ],
+		in[4 ], in[5 ], in[6 ], in[7 ],
+		in[8 ], in[9 ], in[10], in[11],
+		in[12], in[13], in[14], in[15]
+	};
+}
+
+//storing:
+
+QM_INLINE void QM_PREFIX(mat3_store)(QMmat3 m, float* out)
+{
+	out[0] = m.m[0][0];
+	out[1] = m.m[0][1];
+	out[2] = m.m[0][2];
+
+	out[3] = m.m[1][0];
+	out[4] = m.m[1][1];
+	out[5] = m.m[1][2];
+
+	out[6] = m.m[2][0];
+	out[7] = m.m[2][1];
+	out[8] = m.m[2][2];
+}
+
+QM_INLINE void QM_PREFIX(mat4_store)(QMmat4 m, float* out)
+{
+	out[0] = m.m[0][0];
+	out[1] = m.m[0][1];
+	out[2] = m.m[0][2];
+	out[3] = m.m[0][3];
+
+	out[4] = m.m[1][0];
+	out[5] = m.m[1][1];
+	out[6] = m.m[1][2];
+	out[7] = m.m[1][3];
+
+	out[ 8] = m.m[2][0];
+	out[ 9] = m.m[2][1];
+	out[10] = m.m[2][2];
+	out[11] = m.m[2][3];
+
+	out[12] = m.m[3][0];
+	out[13] = m.m[3][1];
+	out[14] = m.m[3][2];
+	out[15] = m.m[3][3];
+}
+
 //initialization:
 
 QM_INLINE QMmat3 QM_PREFIX(mat3_identity)()
@@ -937,6 +1103,17 @@ QM_INLINE QMvec4 QM_PREFIX(mat4_mult_vec4)(QMmat4 m, QMvec4 v)
 	#endif
 
 	return result;
+}
+
+QM_INLINE QMvec3 QM_PREFIX(mat4_transform_vec3)(QMmat4 m, QMvec3 v)
+{
+	QMvec3 result;
+
+	result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0];
+	result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1];
+	result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2];
+
+	return result;	
 }
 
 //transpose:
@@ -1327,6 +1504,19 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
 //----------------------------------------------------------------------//
 //QUATERNION FUNCTIONS:
 
+QM_INLINE QMquaternion QM_PREFIX(quaternion_load)(const float* in)
+{
+	return (QMquaternion){ in[0], in[1], in[2], in[3] };
+}
+
+QM_INLINE QMquaternion QM_PREFIX(quaternion_store)(QMquaternion q, float* out)
+{
+	out[0] = q.x;
+	out[1] = q.y;
+	out[2] = q.z;
+	out[3] = q.w;
+}
+
 QM_INLINE QMquaternion QM_PREFIX(quaternion_identity)()
 {
 	QMquaternion result;
@@ -1637,6 +1827,186 @@ QM_INLINE QMmat4 QM_PREFIX(quaternion_to_mat4)(QMquaternion q)
 	result.m[2][0] = xz2 - sy2;
 	result.m[2][1] = yz2 + sx2;
 	result.m[2][2] = 1.0f - (xx2 + yy2);
+
+	return result;
+}
+
+//----------------------------------------------------------------------//
+//BOUNING BOX FUNCTIONS:
+
+//loading:
+
+QM_INLINE QMbbox2 QM_PREFIX(bbox2_load)(const float* in)
+{
+	return (QMbbox2){ { in[0], in[1] }, { in[2], in[3] } };
+}
+
+QM_INLINE QMbbox3 QM_PREFIX(bbox3_load)(const float* in)
+{
+	return (QMbbox3){ { in[0], in[1], in[2] }, { in[3], in[4], in[5] } };
+}
+
+//storing:
+
+QM_INLINE void QM_PREFIX(bbox2_store)(QMbbox2 b, float* out)
+{
+	out[0] = b.min.x;
+	out[1] = b.min.y;
+	out[2] = b.max.x;
+	out[3] = b.max.y;
+}
+
+QM_INLINE void QM_PREFIX(bbox3_store)(QMbbox3 b, float* out)
+{
+	out[0] = b.min.x;
+	out[1] = b.min.y;
+	out[2] = b.min.z;
+	out[3] = b.max.x;
+	out[4] = b.max.y;
+	out[5] = b.max.z;
+}
+
+//initialized:
+
+QM_INLINE QMbbox2 QM_PREFIX(bbox2_initialized)()
+{
+	return (QMbbox2){ { INFINITY, INFINITY }, { -INFINITY, -INFINITY } };
+}
+
+QM_INLINE QMbbox3 QM_PREFIX(bbox3_initialized)()
+{
+	return (QMbbox3){ { INFINITY, INFINITY, INFINITY }, { -INFINITY, -INFINITY, -INFINITY } };
+}
+
+//union:
+
+QM_INLINE QMbbox2 QM_PREFIX(bbox2_union)(QMbbox2 b1, QMbbox2 b2)
+{
+	QMbbox2 result;
+
+	result.min = QM_PREFIX(vec2_min)(b1.min, b2.min);
+	result.max = QM_PREFIX(vec2_max)(b1.max, b2.max);
+
+	return result;
+}
+
+QM_INLINE QMbbox3 QM_PREFIX(bbox3_union)(QMbbox3 b1, QMbbox3 b2)
+{
+	QMbbox3 result;
+
+	result.min = QM_PREFIX(vec3_min)(b1.min, b2.min);
+	result.max = QM_PREFIX(vec3_max)(b1.max, b2.max);
+
+	return result;
+}
+
+QM_INLINE void QM_PREFIX(bbox2_union_inplace)(QMbbox2* b1, QMbbox2 b2)
+{
+	b1->min = QM_PREFIX(vec2_min)(b1->min, b2.min);
+	b1->max = QM_PREFIX(vec2_max)(b1->max, b2.max);
+}
+
+QM_INLINE void QM_PREFIX(bbox3_union_inplace)(QMbbox3* b1, QMbbox3 b2)
+{
+	b1->min = QM_PREFIX(vec3_min)(b1->min, b2.min);
+	b1->max = QM_PREFIX(vec3_max)(b1->max, b2.max);
+}
+
+//vector union:
+
+QM_INLINE QMbbox2 QM_PREFIX(bbox2_union_vec2)(QMbbox2 b, QMvec2 v)
+{
+	QMbbox2 result;
+
+	result.min = QM_PREFIX(vec2_min)(b.min, v);
+	result.max = QM_PREFIX(vec2_max)(b.max, v);
+
+	return result;
+}
+
+QM_INLINE QMbbox3 QM_PREFIX(bbox3_union_vec3)(QMbbox3 b, QMvec3 v)
+{
+	QMbbox3 result;
+
+	result.min = QM_PREFIX(vec3_min)(b.min, v);
+	result.max = QM_PREFIX(vec3_max)(b.max, v);
+
+	return result;
+}
+
+QM_INLINE void QM_PREFIX(bbox2_union_vec2_inplace)(QMbbox2* b, QMvec2 v)
+{
+	b->min = QM_PREFIX(vec2_min)(b->min, v);
+	b->max = QM_PREFIX(vec2_max)(b->max, v);
+}
+
+QM_INLINE void QM_PREFIX(bbox3_union_vec3_inplace)(QMbbox3* b, QMvec3 v)
+{
+	b->min = QM_PREFIX(vec3_min)(b->min, v);
+	b->max = QM_PREFIX(vec3_max)(b->max, v);
+}
+
+//extent:
+
+QM_INLINE QMvec2 QM_PREFIX(bbox2_extent)(QMbbox2 b)
+{
+	return QM_PREFIX(vec2_sub)(b.max, b.min);
+}
+
+QM_INLINE QMvec3 QM_PREFIX(bbox3_extent)(QMbbox3 b)
+{
+	return QM_PREFIX(vec3_sub)(b.max, b.min);
+}
+
+//centroid:
+
+QM_INLINE QMvec2 QM_PREFIX(bbox2_centroid)(QMbbox2 b)
+{
+	return QM_PREFIX(vec2_scale)(QM_PREFIX(vec2_add)(b.max, b.min), 0.5f);
+}
+
+QM_INLINE QMvec3 QM_PREFIX(bbox3_centroid)(QMbbox3 b)
+{
+	return QM_PREFIX(vec3_scale)(QM_PREFIX(vec3_add)(b.max, b.min), 0.5f);
+}
+
+//offset:
+
+QM_INLINE QMvec2 QM_PREFIX(bbox2_offset)(QMbbox2 b, QMvec2 v)
+{
+	return QM_PREFIX(vec2_div)(QM_PREFIX(vec2_sub)(v, b.min), QM_PREFIX(bbox2_extent)(b));
+}
+
+QM_INLINE QMvec3 QM_PREFIX(bbox3_offset)(QMbbox3 b, QMvec3 v)
+{
+	return QM_PREFIX(vec3_div)(QM_PREFIX(vec3_sub)(v, b.min), QM_PREFIX(bbox3_extent)(b));
+}
+
+//perimeter/sa:
+
+QM_INLINE float QM_PREFIX(bbox2_perimeter)(QMbbox2 b)
+{
+	float result = 0.0f;
+
+	QMvec2 extent = QM_PREFIX(bbox2_extent)(b);
+	
+	result += extent.x;
+	result += extent.y;
+	result *= 2.0f;
+
+	return result;
+}
+
+QM_INLINE float QM_PREFIX(bbox3_surface_area)(QMbbox3 b)
+{
+	float result = 0.0f;
+
+	QMvec3 extent = QM_PREFIX(bbox3_extent)(b);
+
+	result += extent.x * extent.y;
+	result += extent.x * extent.z;
+	result += extent.y * extent.z;
+	result *= 2.0f;
 
 	return result;
 }
