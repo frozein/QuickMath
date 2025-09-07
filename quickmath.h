@@ -1509,7 +1509,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_load)(const float* in)
 	return (QMquaternion){ in[0], in[1], in[2], in[3] };
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_store)(QMquaternion q, float* out)
+QM_INLINE void QM_PREFIX(quaternion_store)(QMquaternion q, float* out)
 {
 	out[0] = q.x;
 	out[1] = q.y;
