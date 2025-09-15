@@ -8,14 +8,13 @@
  * 
  * ------------------------------------------------------------------------
  * 
- * to change or disable the function prefix (the default is "qm_"), change the macro on
- * line 98 to contain the desired prefix, or "#define QM_PREFIX" for no prefix
+ * to change or disable the function prefix (the default is "qm_"), you must
+ * "#define QM_PREFIX(name) myprefix_##name" before including the library
  * 
- * if you wish not to use SSE3 intrinsics (if they are not supported for example),
- * change the macro on line 88 to "#define QM_USE_SSE 0"
- * 
- * to disable the need to link with the C runtime library, change the macros beginning
- * on line 104 and the #include on line 102 to the appropirate functions/files
+ * to disable the need to link with the C runtime library, you must
+ * "#define QM_SQRTF(x) my_sqrtf(x)", "#define QM_SINF(x) my_sinf(x)", "#define QM_COSF(x) my_cosf(x)",
+ * "#define QM_TANF(x) my_tanf(x)", and "#define QM_ACOSF(x) my_acosf(x)" before 
+ * including the library
  * 
  * ------------------------------------------------------------------------
  * 
@@ -106,29 +105,32 @@ extern "C"
 {
 #endif
 
-//if you wish NOT to use SSE3 SIMD intrinsics, simply change the
-//#define to 0
-#define QM_USE_SSE 1
-#if QM_USE_SSE
+//check for SSE support
+#if defined(__SSE3__)
 	#include <xmmintrin.h>
 	#include <pmmintrin.h>
+
+	#define QM_USE_SSE 1
+#else
+	#define QM_USE_SSE 0
 #endif
 
+//define customizeable function prefix
+#ifndef QM_PREFIX
+	#define QM_PREFIX(name) qm_##name
+#endif
 #define QM_INLINE static inline
 
-//if you wish to set your own function prefix or remove it entirely,
-//simply change this macro:
-#define QM_PREFIX(name) qm_##name
+//include crt math if needed
+#if !defined(QM_SQRTF) || !defined(QM_SINF) || !defined(QM_COSF) || !defined(QM_TANF) || !defined(QM_ACOSF)
+	#include <math.h>
 
-//if you wish to not use any of the CRT functions, you must #define your
-//own versions of the below functions and #include the appropriate header
-#include <math.h>
-
-#define QM_SQRTF sqrtf
-#define QM_SINF  sinf
-#define QM_COSF  cosf
-#define QM_TANF  tanf
-#define QM_ACOSF acosf
+	#define QM_SQRTF(x) sqrtf(x)
+	#define QM_SINF(x)  sinf(x)
+	#define QM_COSF(x)  cosf(x)
+	#define QM_TANF(x)  tanf(x)
+	#define QM_ACOSF(x) acosf(x)
+#endif
 
 //remove troublesome win32 #defines
 #ifdef _WIN32
