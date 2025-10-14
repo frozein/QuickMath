@@ -9,7 +9,11 @@
  * ------------------------------------------------------------------------
  * 
  * to change or disable the function prefix (the default is "qm_"), you must
- * "#define QM_PREFIX(name) myprefix_##name" before including the library
+ * "#define QM_FUNC_PREFIX(name) myprefix_##name" before including the library
+ *
+ * to define your own function attributes (like a __device__ decorator for CUDA), you
+ * must "#define QM_FUNC_ATTRIBS my_attribs" before including the library. Note that you
+ * almost always want to include "static" as an attrib
  * 
  * to disable the need to link with the C runtime library, you must
  * "#define QM_SQRTF(x) my_sqrtf(x)", "#define QM_SINF(x) my_sinf(x)", "#define QM_COSF(x) my_cosf(x)",
@@ -116,10 +120,12 @@ extern "C"
 #endif
 
 //define customizeable function prefix
-#ifndef QM_PREFIX
-	#define QM_PREFIX(name) qm_##name
+#ifndef QM_FUNC_PREFIX
+	#define QM_FUNC_PREFIX(name) qm_##name
 #endif
-#define QM_INLINE static inline
+#ifndef QM_FUNC_ATTRIBS
+	#define QM_FUNC_ATTRIBS static inline
+#endif
 
 //include crt math if needed
 #if !defined(QM_SQRTF) || !defined(QM_SINF) || !defined(QM_COSF) || !defined(QM_TANF) || !defined(QM_ACOSF)
@@ -233,19 +239,19 @@ typedef struct
 #define QM_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define QM_ABS(x) ((x) > 0 ? (x) : -(x))
 
-QM_INLINE float QM_PREFIX(rad_to_deg)(float rad)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(rad_to_deg)(float rad)
 {
 	return rad * 57.2957795131f;
 }
 
-QM_INLINE float QM_PREFIX(deg_to_rad)(float deg)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(deg_to_rad)(float deg)
 {
 	return deg * 0.01745329251f;
 }
 
 #if QM_USE_SSE
 
-QM_INLINE __m128 QM_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2)
+QM_FUNC_ATTRIBS __m128 QM_FUNC_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2)
 {
 	__m128 result;
 
@@ -264,37 +270,37 @@ QM_INLINE __m128 QM_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2)
 
 //loading:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_load)(const float* in)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_load)(const float* in)
 {
 	return (QMvec2){ in[0], in[1] };
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_load)(const float* in)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_load)(const float* in)
 {
 	return (QMvec3){ in[0], in[1], in[2] };
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_load)(const float* in)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_load)(const float* in)
 {
 	return (QMvec4){ in[0], in[1], in[2], in[3] };
 }
 
 //storing:
 
-QM_INLINE void QM_PREFIX(vec2_store)(QMvec2 v, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(vec2_store)(QMvec2 v, float* out)
 {
 	out[0] = v.x;
 	out[1] = v.y;
 }
 
-QM_INLINE void QM_PREFIX(vec3_store)(QMvec3 v, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(vec3_store)(QMvec3 v, float* out)
 {
 	out[0] = v.x;
 	out[1] = v.y;
 	out[2] = v.z;
 }
 
-QM_INLINE void QM_PREFIX(vec4_store)(QMvec4 v, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(vec4_store)(QMvec4 v, float* out)
 {
 	out[0] = v.x;
 	out[1] = v.y;
@@ -304,24 +310,24 @@ QM_INLINE void QM_PREFIX(vec4_store)(QMvec4 v, float* out)
 
 //full:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_full)(float val)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_full)(float val)
 {
 	return (QMvec2){ val, val };
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_full)(float val)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_full)(float val)
 {
 	return (QMvec3){ val, val, val };
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_full)(float val)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_full)(float val)
 {
 	return (QMvec4){ val, val, val, val };
 }
 
 //addition:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_add)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_add)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -331,7 +337,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_add)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_add)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_add)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -342,7 +348,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_add)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_add)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_add)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -364,7 +370,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_add)(QMvec4 v1, QMvec4 v2)
 
 //subtraction:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_sub)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_sub)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -374,7 +380,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_sub)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_sub)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_sub)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -385,7 +391,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_sub)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_sub)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_sub)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -407,7 +413,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_sub)(QMvec4 v1, QMvec4 v2)
 
 //multiplication:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_mult)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_mult)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -417,7 +423,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_mult)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_mult)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_mult)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -428,7 +434,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_mult)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_mult)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_mult)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -450,7 +456,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_mult)(QMvec4 v1, QMvec4 v2)
 
 //division:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_div)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_div)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -460,7 +466,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_div)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_div)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_div)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -471,7 +477,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_div)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_div)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_div)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -493,7 +499,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_div)(QMvec4 v1, QMvec4 v2)
 
 //scalar multiplication:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_scale)(QMvec2 v, float s)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_scale)(QMvec2 v, float s)
 {
 	QMvec2 result;
 
@@ -503,7 +509,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_scale)(QMvec2 v, float s)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_scale)(QMvec3 v, float s)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_scale)(QMvec3 v, float s)
 {
 	QMvec3 result;
 
@@ -514,7 +520,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_scale)(QMvec3 v, float s)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_scale)(QMvec4 v, float s)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_scale)(QMvec4 v, float s)
 {
 	QMvec4 result;
 
@@ -537,7 +543,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_scale)(QMvec4 v, float s)
 
 //dot product:
 
-QM_INLINE float QM_PREFIX(vec2_dot)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec2_dot)(QMvec2 v1, QMvec2 v2)
 {
 	float result;
 
@@ -546,7 +552,7 @@ QM_INLINE float QM_PREFIX(vec2_dot)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec3_dot)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec3_dot)(QMvec3 v1, QMvec3 v2)
 {
 	float result;
 
@@ -555,7 +561,7 @@ QM_INLINE float QM_PREFIX(vec3_dot)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec4_dot)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec4_dot)(QMvec4 v1, QMvec4 v2)
 {
 	float result;
 
@@ -577,7 +583,7 @@ QM_INLINE float QM_PREFIX(vec4_dot)(QMvec4 v1, QMvec4 v2)
 
 //cross product
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_cross)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_cross)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -590,40 +596,40 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_cross)(QMvec3 v1, QMvec3 v2)
 
 //length:
 
-QM_INLINE float QM_PREFIX(vec2_length)(QMvec2 v)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec2_length)(QMvec2 v)
 {
 	float result;
 
-	result = QM_SQRTF(QM_PREFIX(vec2_dot)(v, v));
+	result = QM_SQRTF(QM_FUNC_PREFIX(vec2_dot)(v, v));
 
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec3_length)(QMvec3 v)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec3_length)(QMvec3 v)
 {
 	float result;
 
-	result = QM_SQRTF(QM_PREFIX(vec3_dot)(v, v));
+	result = QM_SQRTF(QM_FUNC_PREFIX(vec3_dot)(v, v));
 
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec4_length)(QMvec4 v)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec4_length)(QMvec4 v)
 {
 	float result;
 
-	result = QM_SQRTF(QM_PREFIX(vec4_dot)(v, v));
+	result = QM_SQRTF(QM_FUNC_PREFIX(vec4_dot)(v, v));
 
 	return result;
 }
 
 //normalize:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_normalize)(QMvec2 v)
 {
 	QMvec2 result = {0};
 
-	float invLen = QM_PREFIX(vec2_length)(v);
+	float invLen = QM_FUNC_PREFIX(vec2_length)(v);
 	if(invLen != 0.0f)
 	{
 		invLen = 1.0f / invLen;
@@ -634,11 +640,11 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_normalize)(QMvec2 v)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_normalize)(QMvec3 v)
 {
 	QMvec3 result = {0};
 
-	float invLen = QM_PREFIX(vec3_length)(v);
+	float invLen = QM_FUNC_PREFIX(vec3_length)(v);
 	if(invLen != 0.0f)
 	{
 		invLen = 1.0f / invLen;
@@ -650,11 +656,11 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_normalize)(QMvec3 v)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_normalize)(QMvec4 v)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_normalize)(QMvec4 v)
 {
 	QMvec4 result = {0};
 
-	float len = QM_PREFIX(vec4_length)(v);
+	float len = QM_FUNC_PREFIX(vec4_length)(v);
 	if(len != 0.0f)
 	{
 		#if QM_USE_SSE
@@ -679,39 +685,39 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_normalize)(QMvec4 v)
 
 //distance:
 
-QM_INLINE float QM_PREFIX(vec2_distance)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec2_distance)(QMvec2 v1, QMvec2 v2)
 {
 	float result;
 
-	QMvec2 to = QM_PREFIX(vec2_sub)(v1, v2);
-	result = QM_PREFIX(vec2_length)(to);
+	QMvec2 to = QM_FUNC_PREFIX(vec2_sub)(v1, v2);
+	result = QM_FUNC_PREFIX(vec2_length)(to);
 
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec3_distance)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec3_distance)(QMvec3 v1, QMvec3 v2)
 {
 	float result;
 
-	QMvec3 to = QM_PREFIX(vec3_sub)(v1, v2);
-	result = QM_PREFIX(vec3_length)(to);
+	QMvec3 to = QM_FUNC_PREFIX(vec3_sub)(v1, v2);
+	result = QM_FUNC_PREFIX(vec3_length)(to);
 
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(vec4_distance)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(vec4_distance)(QMvec4 v1, QMvec4 v2)
 {
 	float result;
 
-	QMvec4 to = QM_PREFIX(vec4_sub)(v1, v2);
-	result = QM_PREFIX(vec4_length)(to);
+	QMvec4 to = QM_FUNC_PREFIX(vec4_sub)(v1, v2);
+	result = QM_FUNC_PREFIX(vec4_length)(to);
 
 	return result;
 }
 
 //equality:
 
-QM_INLINE QMbool QM_PREFIX(vec2_equals)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMbool QM_FUNC_PREFIX(vec2_equals)(QMvec2 v1, QMvec2 v2)
 {
 	QMbool result;
 
@@ -720,7 +726,7 @@ QM_INLINE QMbool QM_PREFIX(vec2_equals)(QMvec2 v1, QMvec2 v2)
 	return result;	
 }
 
-QM_INLINE QMbool QM_PREFIX(vec3_equals)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMbool QM_FUNC_PREFIX(vec3_equals)(QMvec3 v1, QMvec3 v2)
 {
 	QMbool result;
 
@@ -729,7 +735,7 @@ QM_INLINE QMbool QM_PREFIX(vec3_equals)(QMvec3 v1, QMvec3 v2)
 	return result;	
 }
 
-QM_INLINE QMbool QM_PREFIX(vec4_equals)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMbool QM_FUNC_PREFIX(vec4_equals)(QMvec4 v1, QMvec4 v2)
 {
 	QMbool result;
 
@@ -741,7 +747,7 @@ QM_INLINE QMbool QM_PREFIX(vec4_equals)(QMvec4 v1, QMvec4 v2)
 
 //min:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_min)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_min)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -751,7 +757,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_min)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_min)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_min)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -762,7 +768,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_min)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_min)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_min)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -784,7 +790,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_min)(QMvec4 v1, QMvec4 v2)
 
 //max:
 
-QM_INLINE QMvec2 QM_PREFIX(vec2_max)(QMvec2 v1, QMvec2 v2)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_max)(QMvec2 v1, QMvec2 v2)
 {
 	QMvec2 result;
 
@@ -794,7 +800,7 @@ QM_INLINE QMvec2 QM_PREFIX(vec2_max)(QMvec2 v1, QMvec2 v2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(vec3_max)(QMvec3 v1, QMvec3 v2)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_max)(QMvec3 v1, QMvec3 v2)
 {
 	QMvec3 result;
 
@@ -805,7 +811,7 @@ QM_INLINE QMvec3 QM_PREFIX(vec3_max)(QMvec3 v1, QMvec3 v2)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 {
 	QMvec4 result;
 
@@ -830,7 +836,7 @@ QM_INLINE QMvec4 QM_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 
 //loading:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_load)(const float* in)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_load)(const float* in)
 {
 	return (QMmat3){
 		in[0], in[1], in[2],
@@ -839,7 +845,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_load)(const float* in)
 	};
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_load)(const float* in)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load)(const float* in)
 {
 	return (QMmat4){
 		in[0 ], in[1 ], in[2 ], in[3 ],
@@ -851,7 +857,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_load)(const float* in)
 
 //storing:
 
-QM_INLINE void QM_PREFIX(mat3_store)(QMmat3 m, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat3_store)(QMmat3 m, float* out)
 {
 	out[0] = m.m[0][0];
 	out[1] = m.m[0][1];
@@ -866,7 +872,7 @@ QM_INLINE void QM_PREFIX(mat3_store)(QMmat3 m, float* out)
 	out[8] = m.m[2][2];
 }
 
-QM_INLINE void QM_PREFIX(mat4_store)(QMmat4 m, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat4_store)(QMmat4 m, float* out)
 {
 	out[0] = m.m[0][0];
 	out[1] = m.m[0][1];
@@ -891,7 +897,7 @@ QM_INLINE void QM_PREFIX(mat4_store)(QMmat4 m, float* out)
 
 //initialization:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_identity)()
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_identity)()
 {
 	QMmat3 result = {
 		1.0f, 0.0f, 0.0f,
@@ -902,7 +908,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_identity)()
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_identity)()
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_identity)()
 {
 	QMmat4 result = {
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -916,7 +922,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_identity)()
 
 //addition:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_add)(QMmat3 m1, QMmat3 m2)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_add)(QMmat3 m1, QMmat3 m2)
 {
 	QMmat3 result;
 
@@ -933,7 +939,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_add)(QMmat3 m1, QMmat3 m2)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_add)(QMmat4 m1, QMmat4 m2)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_add)(QMmat4 m1, QMmat4 m2)
 {
 	QMmat4 result;
 
@@ -970,7 +976,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_add)(QMmat4 m1, QMmat4 m2)
 
 //subtraction:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_sub)(QMmat3 m1, QMmat3 m2)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_sub)(QMmat3 m1, QMmat3 m2)
 {
 	QMmat3 result;
 
@@ -987,7 +993,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_sub)(QMmat3 m1, QMmat3 m2)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_sub)(QMmat4 m1, QMmat4 m2)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_sub)(QMmat4 m1, QMmat4 m2)
 {
 	QMmat4 result;
 
@@ -1024,7 +1030,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_sub)(QMmat4 m1, QMmat4 m2)
 
 //multiplication:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_mult)(QMmat3 m1, QMmat3 m2)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_mult)(QMmat3 m1, QMmat3 m2)
 {
 	QMmat3 result;
 
@@ -1041,16 +1047,16 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_mult)(QMmat3 m1, QMmat3 m2)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_mult)(QMmat4 m1, QMmat4 m2)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_mult)(QMmat4 m1, QMmat4 m2)
 {
 	QMmat4 result;
 
 	#if QM_USE_SSE
 
-	result.packed[0] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[0], m1);
-	result.packed[1] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[1], m1);
-	result.packed[2] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[2], m1);
-	result.packed[3] = QM_PREFIX(mat4_mult_column_sse)(m2.packed[3], m1);
+	result.packed[0] = QM_FUNC_PREFIX(mat4_mult_column_sse)(m2.packed[0], m1);
+	result.packed[1] = QM_FUNC_PREFIX(mat4_mult_column_sse)(m2.packed[1], m1);
+	result.packed[2] = QM_FUNC_PREFIX(mat4_mult_column_sse)(m2.packed[2], m1);
+	result.packed[3] = QM_FUNC_PREFIX(mat4_mult_column_sse)(m2.packed[3], m1);
 
 	#else
 
@@ -1076,7 +1082,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_mult)(QMmat4 m1, QMmat4 m2)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(mat3_mult_vec3)(QMmat3 m, QMvec3 v)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(mat3_mult_vec3)(QMmat3 m, QMvec3 v)
 {
 	QMvec3 result;
 
@@ -1087,13 +1093,13 @@ QM_INLINE QMvec3 QM_PREFIX(mat3_mult_vec3)(QMmat3 m, QMvec3 v)
 	return result;
 }
 
-QM_INLINE QMvec4 QM_PREFIX(mat4_mult_vec4)(QMmat4 m, QMvec4 v)
+QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(mat4_mult_vec4)(QMmat4 m, QMvec4 v)
 {
 	QMvec4 result;
 
 	#if QM_USE_SSE
 
-	result.packed = QM_PREFIX(mat4_mult_column_sse)(v.packed, m);
+	result.packed = QM_FUNC_PREFIX(mat4_mult_column_sse)(v.packed, m);
 
 	#else
 
@@ -1107,7 +1113,7 @@ QM_INLINE QMvec4 QM_PREFIX(mat4_mult_vec4)(QMmat4 m, QMvec4 v)
 	return result;
 }
 
-QM_INLINE QMvec3 QM_PREFIX(mat4_transform_vec3)(QMmat4 m, QMvec3 v)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(mat4_transform_vec3)(QMmat4 m, QMvec3 v)
 {
 	QMvec3 result;
 
@@ -1120,7 +1126,7 @@ QM_INLINE QMvec3 QM_PREFIX(mat4_transform_vec3)(QMmat4 m, QMvec3 v)
 
 //transpose:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_transpose)(QMmat3 m)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_transpose)(QMmat3 m)
 {
 	QMmat3 result;
 
@@ -1137,7 +1143,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_transpose)(QMmat3 m)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_transpose)(QMmat4 m)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_transpose)(QMmat4 m)
 {
 	QMmat4 result = m;
 
@@ -1171,7 +1177,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_transpose)(QMmat4 m)
 
 //inverse:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_inv)(QMmat3 m)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_inv)(QMmat3 m)
 {
 	QMmat3 result;
 
@@ -1205,7 +1211,7 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_inv)(QMmat3 m)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_inv)(QMmat4 mat)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_inv)(QMmat4 mat)
 {
 	//TODO: this function is not SIMD optimized, figure out how to do it
 
@@ -1296,9 +1302,9 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_inv)(QMmat4 mat)
 
 //translation:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_translate)(QMvec2 t)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_translate)(QMvec2 t)
 {
-	QMmat3 result = QM_PREFIX(mat3_identity)();
+	QMmat3 result = QM_FUNC_PREFIX(mat3_identity)();
 
 	result.m[2][0] = t.x;
 	result.m[2][1] = t.y;
@@ -1306,9 +1312,9 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_translate)(QMvec2 t)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_translate)(QMvec3 t)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_translate)(QMvec3 t)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
 	result.m[3][0] = t.x;
 	result.m[3][1] = t.y;
@@ -1319,9 +1325,9 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_translate)(QMvec3 t)
 
 //scaling:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_scale)(QMvec2 s)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_scale)(QMvec2 s)
 {
-	QMmat3 result = QM_PREFIX(mat3_identity)();
+	QMmat3 result = QM_FUNC_PREFIX(mat3_identity)();
 
 	result.m[0][0] = s.x;
 	result.m[1][1] = s.y;
@@ -1329,9 +1335,9 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_scale)(QMvec2 s)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_scale)(QMvec3 s)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_scale)(QMvec3 s)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
 	result.m[0][0] = s.x;
 	result.m[1][1] = s.y;
@@ -1342,11 +1348,11 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_scale)(QMvec3 s)
 
 //rotation:
 
-QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_rotate)(float angle)
 {
-	QMmat3 result = QM_PREFIX(mat3_identity)();
+	QMmat3 result = QM_FUNC_PREFIX(mat3_identity)();
 
-	float radians = QM_PREFIX(deg_to_rad)(angle);
+	float radians = QM_FUNC_PREFIX(deg_to_rad)(angle);
 	float sine   = QM_SINF(radians);
 	float cosine = QM_COSF(radians);
 
@@ -1358,13 +1364,13 @@ QM_INLINE QMmat3 QM_PREFIX(mat3_rotate)(float angle)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
-	axis = QM_PREFIX(vec3_normalize)(axis);
+	axis = QM_FUNC_PREFIX(vec3_normalize)(axis);
 
-	float radians = QM_PREFIX(deg_to_rad)(angle);
+	float radians = QM_FUNC_PREFIX(deg_to_rad)(angle);
 	float sine    = QM_SINF(radians);
 	float cosine  = QM_COSF(radians);
 	float cosine2 = 1.0f - cosine;
@@ -1382,14 +1388,14 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate)(QMvec3 axis, float angle)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
 	QMvec3 radians;
-	radians.x = QM_PREFIX(deg_to_rad)(angles.x);
-	radians.y = QM_PREFIX(deg_to_rad)(angles.y);
-	radians.z = QM_PREFIX(deg_to_rad)(angles.z);
+	radians.x = QM_FUNC_PREFIX(deg_to_rad)(angles.x);
+	radians.y = QM_FUNC_PREFIX(deg_to_rad)(angles.y);
+	radians.z = QM_FUNC_PREFIX(deg_to_rad)(angles.z);
 
 	float sinX = QM_SINF(radians.x);
 	float cosX = QM_COSF(radians.x);
@@ -1413,7 +1419,7 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_rotate_euler)(QMvec3 angles)
 
 //to mat3:
 
-QM_INLINE QMmat3 QM_PREFIX(mat4_top_left)(QMmat4 m)
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat4_top_left)(QMmat4 m)
 {
 	QMmat3 result;
 
@@ -1432,16 +1438,14 @@ QM_INLINE QMmat3 QM_PREFIX(mat4_top_left)(QMmat4 m)
 
 //projection:
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near, float far)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_perspective)(float fov, float aspect, float near, float far)
 {
 	QMmat4 result = {0};
 
-	float scale = QM_TANF(QM_PREFIX(deg_to_rad)(fov * 0.5f)) * near;
+	float scale = QM_TANF(QM_FUNC_PREFIX(deg_to_rad)(fov * 0.5f)) * near;
 
 	float right = aspect * scale;
-	float left  = -right;
 	float top   = scale;
-	float bot   = -top;
 
 	result.m[0][0] = near / right;
 	result.m[1][1] = near / top;
@@ -1452,9 +1456,9 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_perspective)(float fov, float aspect, float near
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_orthographic)(float left, float right, float bot, float top, float near, float far)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_orthographic)(float left, float right, float bot, float top, float near, float far)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
 	result.m[0][0] = 2.0f / (right - left);
 	result.m[1][1] = 2.0f / (top - bot);
@@ -1469,14 +1473,14 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_orthographic)(float left, float right, float bot
 
 //view matrix:
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 {
 	QMmat4 result;
 
-	QMvec3 r = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_cross)(up, dir));
-	QMvec3 u = QM_PREFIX(vec3_cross)(dir, r);
+	QMvec3 r = QM_FUNC_PREFIX(vec3_normalize)(QM_FUNC_PREFIX(vec3_cross)(up, dir));
+	QMvec3 u = QM_FUNC_PREFIX(vec3_cross)(dir, r);
 
-	QMmat4 RUD = QM_PREFIX(mat4_identity)();
+	QMmat4 RUD = QM_FUNC_PREFIX(mat4_identity)();
 	RUD.m[0][0] = r.x;
 	RUD.m[1][0] = r.y;
 	RUD.m[2][0] = r.z;
@@ -1488,17 +1492,17 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_look)(QMvec3 pos, QMvec3 dir, QMvec3 up)
 	RUD.m[2][2] = -dir.z;
 
 	QMvec3 oppPos = {-pos.x, -pos.y, -pos.z};	
-	result = QM_PREFIX(mat4_mult)(RUD, QM_PREFIX(mat4_translate)(oppPos));
+	result = QM_FUNC_PREFIX(mat4_mult)(RUD, QM_FUNC_PREFIX(mat4_translate)(oppPos));
 
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
 {
 	QMmat4 result;
 
-	QMvec3 dir = QM_PREFIX(vec3_normalize)(QM_PREFIX(vec3_sub)(pos, target));
-	result = QM_PREFIX(mat4_look)(pos, dir, up);
+	QMvec3 dir = QM_FUNC_PREFIX(vec3_normalize)(QM_FUNC_PREFIX(vec3_sub)(pos, target));
+	result = QM_FUNC_PREFIX(mat4_look)(pos, dir, up);
 
 	return result;
 }
@@ -1506,12 +1510,12 @@ QM_INLINE QMmat4 QM_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QMvec3 up)
 //----------------------------------------------------------------------//
 //QUATERNION FUNCTIONS:
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_load)(const float* in)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_load)(const float* in)
 {
 	return (QMquaternion){ in[0], in[1], in[2], in[3] };
 }
 
-QM_INLINE void QM_PREFIX(quaternion_store)(QMquaternion q, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(quaternion_store)(QMquaternion q, float* out)
 {
 	out[0] = q.x;
 	out[1] = q.y;
@@ -1519,7 +1523,7 @@ QM_INLINE void QM_PREFIX(quaternion_store)(QMquaternion q, float* out)
 	out[3] = q.w;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_identity)()
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_identity)()
 {
 	QMquaternion result;
 
@@ -1531,7 +1535,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_identity)()
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_add)(QMquaternion q1, QMquaternion q2)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_add)(QMquaternion q1, QMquaternion q2)
 {
 	QMquaternion result;
 
@@ -1551,7 +1555,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_add)(QMquaternion q1, QMquaternion q
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_sub)(QMquaternion q1, QMquaternion q2)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_sub)(QMquaternion q1, QMquaternion q2)
 {
 	QMquaternion result;
 
@@ -1571,7 +1575,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_sub)(QMquaternion q1, QMquaternion q
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_mult)(QMquaternion q1, QMquaternion q2)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_mult)(QMquaternion q1, QMquaternion q2)
 {
 	QMquaternion result;
 
@@ -1608,7 +1612,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_mult)(QMquaternion q1, QMquaternion 
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_scale)(QMquaternion q, float s)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_scale)(QMquaternion q, float s)
 {
 	QMquaternion result;
 
@@ -1629,7 +1633,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_scale)(QMquaternion q, float s)
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(quaternion_dot)(QMquaternion q1, QMquaternion q2)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(quaternion_dot)(QMquaternion q1, QMquaternion q2)
 {
 	float result;
 
@@ -1649,20 +1653,20 @@ QM_INLINE float QM_PREFIX(quaternion_dot)(QMquaternion q1, QMquaternion q2)
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(quaternion_length)(QMquaternion q)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(quaternion_length)(QMquaternion q)
 {
 	float result;
 
-	result = QM_SQRTF(QM_PREFIX(quaternion_dot)(q, q));
+	result = QM_SQRTF(QM_FUNC_PREFIX(quaternion_dot)(q, q));
 
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_normalize)(QMquaternion q)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_normalize)(QMquaternion q)
 {
 	QMquaternion result = {0};
 
-	float len = QM_PREFIX(quaternion_length)(q);
+	float len = QM_FUNC_PREFIX(quaternion_length)(q);
 	if(len != 0.0f)
 	{
 		#if QM_USE_SSE
@@ -1685,7 +1689,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_normalize)(QMquaternion q)
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_conjugate)(QMquaternion q)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_conjugate)(QMquaternion q)
 {
 	QMquaternion result;
 
@@ -1697,7 +1701,7 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_conjugate)(QMquaternion q)
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_inv)(QMquaternion q)
 {
 	QMquaternion result;
 
@@ -1708,12 +1712,12 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
 
 	#if QM_USE_SSE
 
-	__m128 scale = _mm_set1_ps(QM_PREFIX(quaternion_dot)(q, q));
+	__m128 scale = _mm_set1_ps(QM_FUNC_PREFIX(quaternion_dot)(q, q));
 	_mm_div_ps(result.packed, scale);
 
 	#else
 
-	float invLen2 = 1.0f / QM_PREFIX(quaternion_dot)(q, q);
+	float invLen2 = 1.0f / QM_FUNC_PREFIX(quaternion_dot)(q, q);
 
 	result.x *= invLen2;
 	result.y *= invLen2;
@@ -1725,32 +1729,32 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_inv)(QMquaternion q)
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_slerp)(QMquaternion q1, QMquaternion q2, float a)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_slerp)(QMquaternion q1, QMquaternion q2, float a)
 {
 	QMquaternion result;
 
-	float cosine = QM_PREFIX(quaternion_dot)(q1, q2);
+	float cosine = QM_FUNC_PREFIX(quaternion_dot)(q1, q2);
 	float angle = QM_ACOSF(cosine);
 
 	float sine1 = QM_SINF((1.0f - a) * angle);
 	float sine2 = QM_SINF(a * angle);
 	float invSine = 1.0f / QM_SINF(angle);
 
-	q1 = QM_PREFIX(quaternion_scale)(q1, sine1);
-	q2 = QM_PREFIX(quaternion_scale)(q2, sine2);
+	q1 = QM_FUNC_PREFIX(quaternion_scale)(q1, sine1);
+	q2 = QM_FUNC_PREFIX(quaternion_scale)(q2, sine2);
 
-	result = QM_PREFIX(quaternion_add)(q1, q2);
-	result = QM_PREFIX(quaternion_scale)(result, invSine);
+	result = QM_FUNC_PREFIX(quaternion_add)(q1, q2);
+	result = QM_FUNC_PREFIX(quaternion_scale)(result, invSine);
 
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float angle)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float angle)
 {
 	QMquaternion result;
 
-	float radians = QM_PREFIX(deg_to_rad)(angle * 0.5f);
-	axis = QM_PREFIX(vec3_normalize)(axis);
+	float radians = QM_FUNC_PREFIX(deg_to_rad)(angle * 0.5f);
+	axis = QM_FUNC_PREFIX(vec3_normalize)(axis);
 	float sine = QM_SINF(radians);
 
 	result.x = axis.x * sine;
@@ -1761,14 +1765,14 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_from_axis_angle)(QMvec3 axis, float 
 	return result;
 }
 
-QM_INLINE QMquaternion QM_PREFIX(quaternion_from_euler)(QMvec3 angles)
+QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_from_euler)(QMvec3 angles)
 {
 	QMquaternion result;
 
 	QMvec3 radians;
-	radians.x = QM_PREFIX(deg_to_rad)(angles.x * 0.5f);
-	radians.y = QM_PREFIX(deg_to_rad)(angles.y * 0.5f);
-	radians.z = QM_PREFIX(deg_to_rad)(angles.z * 0.5f);
+	radians.x = QM_FUNC_PREFIX(deg_to_rad)(angles.x * 0.5f);
+	radians.y = QM_FUNC_PREFIX(deg_to_rad)(angles.y * 0.5f);
+	radians.z = QM_FUNC_PREFIX(deg_to_rad)(angles.z * 0.5f);
 
 	float sinx = QM_SINF(radians.x);
 	float cosx = QM_COSF(radians.x);
@@ -1803,9 +1807,9 @@ QM_INLINE QMquaternion QM_PREFIX(quaternion_from_euler)(QMvec3 angles)
 	return result;
 }
 
-QM_INLINE QMmat4 QM_PREFIX(quaternion_to_mat4)(QMquaternion q)
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(quaternion_to_mat4)(QMquaternion q)
 {
-	QMmat4 result = QM_PREFIX(mat4_identity)();
+	QMmat4 result = QM_FUNC_PREFIX(mat4_identity)();
 
 	float x2  = q.x + q.x;
     float y2  = q.y + q.y;
@@ -1838,19 +1842,19 @@ QM_INLINE QMmat4 QM_PREFIX(quaternion_to_mat4)(QMquaternion q)
 
 //loading:
 
-QM_INLINE QMbbox2 QM_PREFIX(bbox2_load)(const float* in)
+QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_load)(const float* in)
 {
 	return (QMbbox2){ { in[0], in[1] }, { in[2], in[3] } };
 }
 
-QM_INLINE QMbbox3 QM_PREFIX(bbox3_load)(const float* in)
+QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_load)(const float* in)
 {
 	return (QMbbox3){ { in[0], in[1], in[2] }, { in[3], in[4], in[5] } };
 }
 
 //storing:
 
-QM_INLINE void QM_PREFIX(bbox2_store)(QMbbox2 b, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox2_store)(QMbbox2 b, float* out)
 {
 	out[0] = b.min.x;
 	out[1] = b.min.y;
@@ -1858,7 +1862,7 @@ QM_INLINE void QM_PREFIX(bbox2_store)(QMbbox2 b, float* out)
 	out[3] = b.max.y;
 }
 
-QM_INLINE void QM_PREFIX(bbox3_store)(QMbbox3 b, float* out)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox3_store)(QMbbox3 b, float* out)
 {
 	out[0] = b.min.x;
 	out[1] = b.min.y;
@@ -1870,127 +1874,127 @@ QM_INLINE void QM_PREFIX(bbox3_store)(QMbbox3 b, float* out)
 
 //initialized:
 
-QM_INLINE QMbbox2 QM_PREFIX(bbox2_initialized)()
+QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_initialized)()
 {
 	return (QMbbox2){ { INFINITY, INFINITY }, { -INFINITY, -INFINITY } };
 }
 
-QM_INLINE QMbbox3 QM_PREFIX(bbox3_initialized)()
+QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_initialized)()
 {
 	return (QMbbox3){ { INFINITY, INFINITY, INFINITY }, { -INFINITY, -INFINITY, -INFINITY } };
 }
 
 //union:
 
-QM_INLINE QMbbox2 QM_PREFIX(bbox2_union)(QMbbox2 b1, QMbbox2 b2)
+QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_union)(QMbbox2 b1, QMbbox2 b2)
 {
 	QMbbox2 result;
 
-	result.min = QM_PREFIX(vec2_min)(b1.min, b2.min);
-	result.max = QM_PREFIX(vec2_max)(b1.max, b2.max);
+	result.min = QM_FUNC_PREFIX(vec2_min)(b1.min, b2.min);
+	result.max = QM_FUNC_PREFIX(vec2_max)(b1.max, b2.max);
 
 	return result;
 }
 
-QM_INLINE QMbbox3 QM_PREFIX(bbox3_union)(QMbbox3 b1, QMbbox3 b2)
+QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_union)(QMbbox3 b1, QMbbox3 b2)
 {
 	QMbbox3 result;
 
-	result.min = QM_PREFIX(vec3_min)(b1.min, b2.min);
-	result.max = QM_PREFIX(vec3_max)(b1.max, b2.max);
+	result.min = QM_FUNC_PREFIX(vec3_min)(b1.min, b2.min);
+	result.max = QM_FUNC_PREFIX(vec3_max)(b1.max, b2.max);
 
 	return result;
 }
 
-QM_INLINE void QM_PREFIX(bbox2_union_inplace)(QMbbox2* b1, QMbbox2 b2)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox2_union_inplace)(QMbbox2* b1, QMbbox2 b2)
 {
-	b1->min = QM_PREFIX(vec2_min)(b1->min, b2.min);
-	b1->max = QM_PREFIX(vec2_max)(b1->max, b2.max);
+	b1->min = QM_FUNC_PREFIX(vec2_min)(b1->min, b2.min);
+	b1->max = QM_FUNC_PREFIX(vec2_max)(b1->max, b2.max);
 }
 
-QM_INLINE void QM_PREFIX(bbox3_union_inplace)(QMbbox3* b1, QMbbox3 b2)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox3_union_inplace)(QMbbox3* b1, QMbbox3 b2)
 {
-	b1->min = QM_PREFIX(vec3_min)(b1->min, b2.min);
-	b1->max = QM_PREFIX(vec3_max)(b1->max, b2.max);
+	b1->min = QM_FUNC_PREFIX(vec3_min)(b1->min, b2.min);
+	b1->max = QM_FUNC_PREFIX(vec3_max)(b1->max, b2.max);
 }
 
 //vector union:
 
-QM_INLINE QMbbox2 QM_PREFIX(bbox2_union_vec2)(QMbbox2 b, QMvec2 v)
+QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_union_vec2)(QMbbox2 b, QMvec2 v)
 {
 	QMbbox2 result;
 
-	result.min = QM_PREFIX(vec2_min)(b.min, v);
-	result.max = QM_PREFIX(vec2_max)(b.max, v);
+	result.min = QM_FUNC_PREFIX(vec2_min)(b.min, v);
+	result.max = QM_FUNC_PREFIX(vec2_max)(b.max, v);
 
 	return result;
 }
 
-QM_INLINE QMbbox3 QM_PREFIX(bbox3_union_vec3)(QMbbox3 b, QMvec3 v)
+QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_union_vec3)(QMbbox3 b, QMvec3 v)
 {
 	QMbbox3 result;
 
-	result.min = QM_PREFIX(vec3_min)(b.min, v);
-	result.max = QM_PREFIX(vec3_max)(b.max, v);
+	result.min = QM_FUNC_PREFIX(vec3_min)(b.min, v);
+	result.max = QM_FUNC_PREFIX(vec3_max)(b.max, v);
 
 	return result;
 }
 
-QM_INLINE void QM_PREFIX(bbox2_union_vec2_inplace)(QMbbox2* b, QMvec2 v)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox2_union_vec2_inplace)(QMbbox2* b, QMvec2 v)
 {
-	b->min = QM_PREFIX(vec2_min)(b->min, v);
-	b->max = QM_PREFIX(vec2_max)(b->max, v);
+	b->min = QM_FUNC_PREFIX(vec2_min)(b->min, v);
+	b->max = QM_FUNC_PREFIX(vec2_max)(b->max, v);
 }
 
-QM_INLINE void QM_PREFIX(bbox3_union_vec3_inplace)(QMbbox3* b, QMvec3 v)
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox3_union_vec3_inplace)(QMbbox3* b, QMvec3 v)
 {
-	b->min = QM_PREFIX(vec3_min)(b->min, v);
-	b->max = QM_PREFIX(vec3_max)(b->max, v);
+	b->min = QM_FUNC_PREFIX(vec3_min)(b->min, v);
+	b->max = QM_FUNC_PREFIX(vec3_max)(b->max, v);
 }
 
 //extent:
 
-QM_INLINE QMvec2 QM_PREFIX(bbox2_extent)(QMbbox2 b)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(bbox2_extent)(QMbbox2 b)
 {
-	return QM_PREFIX(vec2_sub)(b.max, b.min);
+	return QM_FUNC_PREFIX(vec2_sub)(b.max, b.min);
 }
 
-QM_INLINE QMvec3 QM_PREFIX(bbox3_extent)(QMbbox3 b)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(bbox3_extent)(QMbbox3 b)
 {
-	return QM_PREFIX(vec3_sub)(b.max, b.min);
+	return QM_FUNC_PREFIX(vec3_sub)(b.max, b.min);
 }
 
 //centroid:
 
-QM_INLINE QMvec2 QM_PREFIX(bbox2_centroid)(QMbbox2 b)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(bbox2_centroid)(QMbbox2 b)
 {
-	return QM_PREFIX(vec2_scale)(QM_PREFIX(vec2_add)(b.max, b.min), 0.5f);
+	return QM_FUNC_PREFIX(vec2_scale)(QM_FUNC_PREFIX(vec2_add)(b.max, b.min), 0.5f);
 }
 
-QM_INLINE QMvec3 QM_PREFIX(bbox3_centroid)(QMbbox3 b)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(bbox3_centroid)(QMbbox3 b)
 {
-	return QM_PREFIX(vec3_scale)(QM_PREFIX(vec3_add)(b.max, b.min), 0.5f);
+	return QM_FUNC_PREFIX(vec3_scale)(QM_FUNC_PREFIX(vec3_add)(b.max, b.min), 0.5f);
 }
 
 //offset:
 
-QM_INLINE QMvec2 QM_PREFIX(bbox2_offset)(QMbbox2 b, QMvec2 v)
+QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(bbox2_offset)(QMbbox2 b, QMvec2 v)
 {
-	return QM_PREFIX(vec2_div)(QM_PREFIX(vec2_sub)(v, b.min), QM_PREFIX(bbox2_extent)(b));
+	return QM_FUNC_PREFIX(vec2_div)(QM_FUNC_PREFIX(vec2_sub)(v, b.min), QM_FUNC_PREFIX(bbox2_extent)(b));
 }
 
-QM_INLINE QMvec3 QM_PREFIX(bbox3_offset)(QMbbox3 b, QMvec3 v)
+QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(bbox3_offset)(QMbbox3 b, QMvec3 v)
 {
-	return QM_PREFIX(vec3_div)(QM_PREFIX(vec3_sub)(v, b.min), QM_PREFIX(bbox3_extent)(b));
+	return QM_FUNC_PREFIX(vec3_div)(QM_FUNC_PREFIX(vec3_sub)(v, b.min), QM_FUNC_PREFIX(bbox3_extent)(b));
 }
 
 //perimeter/sa:
 
-QM_INLINE float QM_PREFIX(bbox2_perimeter)(QMbbox2 b)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(bbox2_perimeter)(QMbbox2 b)
 {
 	float result = 0.0f;
 
-	QMvec2 extent = QM_PREFIX(bbox2_extent)(b);
+	QMvec2 extent = QM_FUNC_PREFIX(bbox2_extent)(b);
 	
 	result += extent.x;
 	result += extent.y;
@@ -1999,11 +2003,11 @@ QM_INLINE float QM_PREFIX(bbox2_perimeter)(QMbbox2 b)
 	return result;
 }
 
-QM_INLINE float QM_PREFIX(bbox3_surface_area)(QMbbox3 b)
+QM_FUNC_ATTRIBS float QM_FUNC_PREFIX(bbox3_surface_area)(QMbbox3 b)
 {
 	float result = 0.0f;
 
-	QMvec3 extent = QM_PREFIX(bbox3_extent)(b);
+	QMvec3 extent = QM_FUNC_PREFIX(bbox3_extent)(b);
 
 	result += extent.x * extent.y;
 	result += extent.x * extent.z;
