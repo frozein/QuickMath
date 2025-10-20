@@ -187,12 +187,14 @@ typedef union
 typedef union
 {
 	float m[3][3];
+	QMvec3 v[3];
 } QMmat3;
 
 //a 4x4 matrix of floats
 typedef union
 {
 	float m[4][4];
+	QMvec4 v[4];
 
 	#if QM_USE_SSE
 
