@@ -45,7 +45,9 @@
  * QMvecn       qm_vecn_max                   (QMvecn v1, QMvecn v2);
  * 
  * QMmatn       qm_matn_load                  (const float* in);
+ * QMmatn       qm_matn_load_row_major        (const float* in);
  * void         qm_matn_store                 (QMmatn m, float* out);
+ * void         qm_matn_store_row_major       (QMmatn m, float* out);
  * QMmatn       qm_matn_identity              ();
  * QMmatn       qm_matn_add                   (QMmatn m1, QMmatn m2);
  * QMmatn       qm_matn_sub                   (QMmatn m1, QMmatn m2);
@@ -847,6 +849,15 @@ QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_load)(const float* in)
 	};
 }
 
+QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_load_row_major)(const float* in)
+{
+	return (QMmat3){
+		in[0], in[3], in[6],
+		in[1], in[4], in[7],
+		in[2], in[5], in[8]
+	};
+}
+
 QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load)(const float* in)
 {
 	return (QMmat4){
@@ -854,6 +865,16 @@ QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load)(const float* in)
 		in[4 ], in[5 ], in[6 ], in[7 ],
 		in[8 ], in[9 ], in[10], in[11],
 		in[12], in[13], in[14], in[15]
+	};
+}
+
+QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load_row_major)(const float* in)
+{
+	return (QMmat4){
+		in[0], in[4], in[8 ], in[12],
+		in[1], in[5], in[9 ], in[13],
+		in[2], in[6], in[10], in[14],
+		in[3], in[7], in[11], in[15]
 	};
 }
 
@@ -871,6 +892,21 @@ QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat3_store)(QMmat3 m, float* out)
 
 	out[6] = m.m[2][0];
 	out[7] = m.m[2][1];
+	out[8] = m.m[2][2];
+}
+
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat3_store_row_major)(QMmat3 m, float* out)
+{
+	out[0] = m.m[0][0];
+	out[1] = m.m[1][0];
+	out[2] = m.m[2][0];
+
+	out[3] = m.m[0][1];
+	out[4] = m.m[1][1];
+	out[5] = m.m[2][1];
+
+	out[6] = m.m[0][2];
+	out[7] = m.m[1][2];
 	out[8] = m.m[2][2];
 }
 
@@ -894,6 +930,29 @@ QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat4_store)(QMmat4 m, float* out)
 	out[12] = m.m[3][0];
 	out[13] = m.m[3][1];
 	out[14] = m.m[3][2];
+	out[15] = m.m[3][3];
+}
+
+QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(mat4_store_row_major)(QMmat4 m, float* out)
+{
+	out[0] = m.m[0][0];
+	out[1] = m.m[1][0];
+	out[2] = m.m[2][0];
+	out[3] = m.m[3][0];
+
+	out[4] = m.m[0][1];
+	out[5] = m.m[1][1];
+	out[6] = m.m[2][1];
+	out[7] = m.m[3][1];
+
+	out[ 8] = m.m[0][2];
+	out[ 9] = m.m[1][2];
+	out[10] = m.m[2][2];
+	out[11] = m.m[3][2];
+
+	out[12] = m.m[0][3];
+	out[13] = m.m[1][3];
+	out[14] = m.m[2][3];
 	out[15] = m.m[3][3];
 }
 
