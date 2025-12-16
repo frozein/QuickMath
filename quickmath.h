@@ -276,17 +276,20 @@ QM_FUNC_ATTRIBS __m128 QM_FUNC_PREFIX(mat4_mult_column_sse)(__m128 c1, QMmat4 m2
 
 QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_load)(const float* in)
 {
-	return (QMvec2){ in[0], in[1] };
+	QMvec2 result = { in[0], in[1] };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_load)(const float* in)
 {
-	return (QMvec3){ in[0], in[1], in[2] };
+	QMvec3 result = { in[0], in[1], in[2] };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_load)(const float* in)
 {
-	return (QMvec4){ in[0], in[1], in[2], in[3] };
+	QMvec4 result = { in[0], in[1], in[2], in[3] };
+	return result;
 }
 
 //storing:
@@ -316,17 +319,20 @@ QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(vec4_store)(QMvec4 v, float* out)
 
 QM_FUNC_ATTRIBS QMvec2 QM_FUNC_PREFIX(vec2_full)(float val)
 {
-	return (QMvec2){ val, val };
+	QMvec2 result = { val, val };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMvec3 QM_FUNC_PREFIX(vec3_full)(float val)
 {
-	return (QMvec3){ val, val, val };
+	QMvec3 result = { val, val, val };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_full)(float val)
 {
-	return (QMvec4){ val, val, val, val };
+	QMvec4 result = { val, val, val, val };
+	return result;
 }
 
 //addition:
@@ -842,40 +848,44 @@ QM_FUNC_ATTRIBS QMvec4 QM_FUNC_PREFIX(vec4_max)(QMvec4 v1, QMvec4 v2)
 
 QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_load)(const float* in)
 {
-	return (QMmat3){
+	QMmat3 result = {
 		in[0], in[1], in[2],
 		in[3], in[4], in[5],
 		in[6], in[7], in[8]
 	};
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMmat3 QM_FUNC_PREFIX(mat3_load_row_major)(const float* in)
 {
-	return (QMmat3){
+	QMmat3 result = {
 		in[0], in[3], in[6],
 		in[1], in[4], in[7],
 		in[2], in[5], in[8]
 	};
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load)(const float* in)
 {
-	return (QMmat4){
+	QMmat4 result = {
 		in[0 ], in[1 ], in[2 ], in[3 ],
 		in[4 ], in[5 ], in[6 ], in[7 ],
 		in[8 ], in[9 ], in[10], in[11],
 		in[12], in[13], in[14], in[15]
 	};
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_load_row_major)(const float* in)
 {
-	return (QMmat4){
+	QMmat4 result = {
 		in[0], in[4], in[8 ], in[12],
 		in[1], in[5], in[9 ], in[13],
 		in[2], in[6], in[10], in[14],
 		in[3], in[7], in[11], in[15]
 	};
+	return result;
 }
 
 //storing:
@@ -1573,7 +1583,8 @@ QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QM
 
 QM_FUNC_ATTRIBS QMquaternion QM_FUNC_PREFIX(quaternion_load)(const float* in)
 {
-	return (QMquaternion){ in[0], in[1], in[2], in[3] };
+	QMquaternion result = { in[0], in[1], in[2], in[3] };
+	return result;
 }
 
 QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(quaternion_store)(QMquaternion q, float* out)
@@ -1905,12 +1916,14 @@ QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(quaternion_to_mat4)(QMquaternion q)
 
 QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_load)(const float* in)
 {
-	return (QMbbox2){ { in[0], in[1] }, { in[2], in[3] } };
+	QMbbox2 result = { { in[0], in[1] }, { in[2], in[3] } };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_load)(const float* in)
 {
-	return (QMbbox3){ { in[0], in[1], in[2] }, { in[3], in[4], in[5] } };
+	QMbbox3 result = { { in[0], in[1], in[2] }, { in[3], in[4], in[5] } };
+	return result;
 }
 
 //storing:
@@ -1937,12 +1950,14 @@ QM_FUNC_ATTRIBS void QM_FUNC_PREFIX(bbox3_store)(QMbbox3 b, float* out)
 
 QM_FUNC_ATTRIBS QMbbox2 QM_FUNC_PREFIX(bbox2_initialized)()
 {
-	return (QMbbox2){ { INFINITY, INFINITY }, { -INFINITY, -INFINITY } };
+	QMbbox2 result = { { INFINITY, INFINITY }, { -INFINITY, -INFINITY } };
+	return result;
 }
 
 QM_FUNC_ATTRIBS QMbbox3 QM_FUNC_PREFIX(bbox3_initialized)()
 {
-	return (QMbbox3){ { INFINITY, INFINITY, INFINITY }, { -INFINITY, -INFINITY, -INFINITY } };
+	QMbbox3 result = { { INFINITY, INFINITY, INFINITY }, { -INFINITY, -INFINITY, -INFINITY } };
+	return result;
 }
 
 //union:
