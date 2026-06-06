@@ -1572,7 +1572,7 @@ QM_FUNC_ATTRIBS QMmat4 QM_FUNC_PREFIX(mat4_lookat)(QMvec3 pos, QMvec3 target, QM
 {
 	QMmat4 result;
 
-	QMvec3 dir = QM_FUNC_PREFIX(vec3_normalize)(QM_FUNC_PREFIX(vec3_sub)(pos, target));
+	QMvec3 dir = QM_FUNC_PREFIX(vec3_normalize)(QM_FUNC_PREFIX(vec3_sub)(target, pos));
 	result = QM_FUNC_PREFIX(mat4_look)(pos, dir, up);
 
 	return result;
